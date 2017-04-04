@@ -1,5 +1,5 @@
 # Hash Table in Assembly MIPS
-## Hash function:
+## Hash Function:
   The index of the hash will be the modulo of the value (key) to be inserted, deleted, searched by the hash's size. 
 
 ## Colision 
