@@ -20,14 +20,12 @@ void insert(int value, int **hash, int *sizeVector){
     if(hash[index][0] == NULL){ // if there is nothing on the array, allocate 1 space for it
       hash[index] = malloc(1*sizeof(int));
       hash[index][0] = value; // insert first value into the first position allocated
-      sizeVector = 1;
+      sizeVector[index] = 1;
     }else if(hash[index]){ //if there are already values on the array, reallocate more memory
-      hash[index]=realloc(hash[index], (sizeVector+1)*sizeof(int));
-      hash[index][sizeVector] = value;
+      hash[index]=realloc(hash[index], (sizeVector[index]+1)*sizeof(int));
+      hash[index][sizeVecto[index]] = value;
       sort();
       sizeVector++;
-
-
     }
 
 }
@@ -49,7 +47,9 @@ void printHash(){
 void main(){
 
   int *hash[16];// vector of 16 pointers
+  int  *sizeVector; // vector that will keep track of the doubly linked lists size
   int option, value;
+  sizeVector = (int*) calloc(16, sizeof(int));
 
   for(int i=0; i < 16 ; i++){
     hash[i] = malloc(1*sizeof(int));
