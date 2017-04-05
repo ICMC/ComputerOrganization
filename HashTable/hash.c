@@ -25,47 +25,24 @@ struct *node createNode(int value){
   return newNode;
 }
 
-void insertBegining(int value, struct node *hash; int *sizeVector, int index){
-    struct node* newNode = createNode(value);
-    // insert begining
-    if(hash[index] == NULL){
-      hash[index] = newNode;
-
-    }
-    else{
-      hash[index]-> prev = newNode;
-      newNode-> next = hash[index];
-      hash[index] = newNode;
-    }
-    sizeVector[index]++;
-}
-
-// insert any middle
-void insertMiddle(int value, struct node *hash, int *sizeVector, int index){
+// insert nodes at the doubly list ordered
+void insert(int value, struct node *hash, int *sizeVector, int index){
     struct node*  newNode = createNode(value);
     struct node* aux = hash[index];
 
-    while(aux->n < value){ // while node value is less then the value to be inserted
-        aux = aux->next;
+    if(hash[index] == NULL){ // if there is no node on the doubly list just insert it
+      hash[index] = newNode;
     }
 
-    newNode->next = aux;
-    newNode->prev = aux->prev;
-    aux->prev = newNode;
-
-}
-
-void insertEnd(int value, struct node *hash, int *sizeVector, int index){
-  struct node* newNode =  createNode(value);
-  struct node* aux = hash[index];
-  int end = sizeVector[index]-1;
-  while(aux->next != NULL){
-      aux = aux->next;
-  }
-  aux-> next = newNode;
-  newNode->next = NULL;
-  newNode->prev = aux;
-  sizeVector[index]++;
+    else{
+        while(aux->n < value){ // while node value is less then the value to be inserted
+          aux = aux->next;
+        }
+        newNode->next = aux;
+        newNode->prev = aux->prev;
+        aux->prev = newNode;
+    }
+    sizeVector++;
 }
 
 
@@ -78,11 +55,33 @@ void menu(int opcao){
 }
 
 
-void remove(int value, int **hash){
+int remove(int value, int **hash, int *sizeVector){
     int index = funcHash(value);
-
+    struct node* aux =  hash[index];
+    struct node* aux2;
+    if(hash[index] == NULL){ // check if the doubly list is not empty
+      return -1;
+    }
+    else{
+      while(aux->n != value){ // while value on the node is different than value searched , go to the next node
+        if(aux->next == NULL){ // if the next node is NULL , then there is not a node with the valued searched
+          return -1;
+        }
+        else{
+          aux= aux->next;
+        }
+      }
+      aux2 = aux->prev;
+      aux2->next = aux->next;
+      if (aux->next != NULL){ // check if the pointer for the next node is NULL
+        aux = aux->next;
+        aux->prev = aux2;
+      }
+      sizeVector[index]--;
+    }
 }
 
+// Implement binary search
 int search(int value, int **hash ){
   int index = funcHash(value);
   return value; // value is on the Hash
