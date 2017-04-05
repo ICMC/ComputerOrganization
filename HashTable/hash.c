@@ -28,14 +28,14 @@ struct *node createNode(int value){
 void insertBegining(int value, struct node *hash; int *sizeVector, int index){
     struct node* newNode = createNode(value);
     // insert begining
-    if(hash[index][0] == NULL){
-      hash[index][0] = newNode;
+    if(hash[index] == NULL){
+      hash[index] = newNode;
 
     }
     else{
-      hash[index][0] -> prev = newNode;
-      newNode-> next = hash[index][0];
-      hash[index][0] = newNode;
+      hash[index]-> prev = newNode;
+      newNode-> next = hash[index];
+      hash[index] = newNode;
     }
     sizeVector[index]++;
 }
@@ -43,17 +43,30 @@ void insertBegining(int value, struct node *hash; int *sizeVector, int index){
 // insert any middle
 void insertMiddle(int value, struct node *hash, int *sizeVector, int index){
     struct node*  newNode = createNode(value);
-    
+    struct node* aux = hash[index];
+
+    while(aux->n < value){
+        aux = aux->next;
+    }
+
+
+
+}
+
+void insertEnd(int value, struct node *hash, int *sizeVector, int index){
+  struct node* newNode =  createNode(value);
+  struct node* aux = hash[index];
+  int end = sizeVector[index]-1;
+  while(aux->next != NULL){
+      aux = aux->next;
+  }
+  aux-> next = newNode;
+  newNode->next = NULL;
+  newNode->prev = aux;
+  sizeVector[index]++;
 }
 
 
-else if(value > hash[index][0] ->n && value < hash[index][sizeVector[index] - 1] -> n){
-
-}
-// insert end
-else if(value >=  hash[index][sizeVector[index] - 1]-> n ){
-
-}
 void menu(int opcao){
   printf("1.Insertion \n");
   printf("2.Remove \n");
@@ -83,7 +96,7 @@ void printHash(){
 void main(){
 
   temp = left = right = NULL;
-  struct node *hash[16];// vector of 16 pointers to node structures
+  struct node **hash=(struct node **)calloc(16,sizeof(struct node*));// vector of 16 pointers to node structures
   int  *sizeVector; // vector that will keep track of the doubly linked lists size
   int option, value;
   sizeVector = (int*) calloc(16, sizeof(int));
