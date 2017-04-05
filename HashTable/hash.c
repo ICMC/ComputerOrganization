@@ -45,11 +45,13 @@ void insertMiddle(int value, struct node *hash, int *sizeVector, int index){
     struct node*  newNode = createNode(value);
     struct node* aux = hash[index];
 
-    while(aux->n < value){
+    while(aux->n < value){ // while node value is less then the value to be inserted
         aux = aux->next;
     }
 
-
+    newNode->next = aux;
+    newNode->prev = aux->prev;
+    aux->prev = newNode;
 
 }
 
@@ -74,13 +76,11 @@ void menu(int opcao){
   printf("4.Exit")
   printf("What option: %d", &opcao);
 }
-void sort(){
-
-}
 
 
 void remove(int value, int **hash){
     int index = funcHash(value);
+
 }
 
 int search(int value, int **hash ){
