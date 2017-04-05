@@ -78,6 +78,7 @@ int remove(int value, int **hash, int *sizeVector){
         aux->prev = aux2;
       }
       sizeVector[index]--;
+      return 0;
     }
 }
 
