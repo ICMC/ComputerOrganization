@@ -1,8 +1,7 @@
 // bia
-
 #include <stdio.h>
 #include <stdlib.h>
-#define hashSize = 16
+#define hashSize 16
 
 // Implement doubly linked list
 //
@@ -16,19 +15,19 @@ int hashFunc(int value){
   return value%hashSize;
 }
 
-struct *node createNode(int value){
-  struct node * newNode;
-  newNode = (struct *node)malloc(1*sizeof(struct *node));
+struct node* createNode(int value){
+  struct node* newNode;
+  newNode = (struct node*)malloc(1*sizeof(struct node*));
   newNode->prev = NULL;
   newNode->next = NULL;
   newNode->n = value;
   return newNode;
 }
 
-// insert nodes at the doubly list ordered
+// insert nodes at the doubly ordered list
 void insert(int value, struct node *hash, int *sizeVector, int index){
     struct node*  newNode = createNode(value);
-    struct node* aux = hash[index];
+    struct node aux = hash[index];
 
     if(hash[index] == NULL){ // if there is no node on the doubly list just insert it
       hash[index] = newNode;
@@ -82,7 +81,7 @@ int remove(int value, int **hash, int *sizeVector){
     }
 }
 
-// Implement binary search
+// binary search...
 int search(int value, int **hash ){
   int index = funcHash(value);
   return value; // value is on the Hash
@@ -98,7 +97,7 @@ void main(){
   temp = left = right = NULL;
   struct node **hash=(struct node **)calloc(16,sizeof(struct node*));// vector of 16 pointers to node structures
   int  *sizeVector; // vector that will keep track of the doubly linked lists size
-  int option, value;
+  int option, value, index;
   sizeVector = (int*) calloc(16, sizeof(int));
 
   menu(option);
@@ -106,14 +105,17 @@ void main(){
   while(option!=4){
     if(option == 1){
       printf("What value you wanna insert: %d", &value);
-      insert(value, hash);
+      index = hashFunc(value);
+      insert(value, hash, sizeVector, index);
     }
     else if(option == 2){
       printf("What value you wanna remove: %d", &value);
-      remove(value, hash);
+      index = hashFunc(value);
+      remove(value, hash, sizeVector, index);
     }
     else if(option == 3){
       prinf("What value you wanna search: %d", &value);
+      index = hashFunc(value);
       search(value, hash);
     }
 
