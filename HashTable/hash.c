@@ -49,7 +49,7 @@ void insert(int value, struct node **hash, int *sizeVector, int index){
 
 
 void menu(int *opcao){
-  printf("1.Insertion \n");
+  printf("\n1.Insertion \n");
   printf("2.Remove \n");
   printf("3.Search \n");
   printf("4.Exit\n");
@@ -74,24 +74,27 @@ int removeKey(int value, struct node **hash, int *sizeVector, int index){
         else{
           aux= aux->next;
         }
+        // when it finds the node with the value searched
+        if(aux->prev == NULL && (aux->next != NULL)){ // checks if the node to be removed is the first on the list
+            aux2 = aux->next;
+            aux2->prev = aux->prev;
+            hash[index] = aux2;
+
+        }else{ // if its not the first element then just remove it
+          aux2 = aux->prev;
+          aux2->next = aux->next;
+          printf("value %d was removed.\n", value);
+        }
       }
-      aux2 = aux->prev;
-      aux2->next = aux->next;
-      printf("value %d was removed.\n", value);
-      if (aux->next != NULL){ // check if the pointer for the next node is NULL
-        aux = aux->next;
-        aux->prev = aux2;
-      }
+
       sizeVector[index]--;
-      return 0;
+      return value;
     }
 }
 
 // binary search...
 int search(int value, struct node **hash, int index ){
   struct node* aux =  hash[index];
-  struct node* aux2;
-
   while(aux->n != value){
       if(aux->next == NULL){
           return -1; // value is not on the hash
@@ -126,6 +129,9 @@ void main(){
       scanf("%d", &value);
       index = hashFunc(value);
       result = removeKey(value, hash, sizeVector, index);
+      if(result != -1){
+        printf("Value %d was removed", result);
+      }
     }
     else if(option == 3){
       printf("What value you wanna search: ");
