@@ -1,16 +1,14 @@
-// bia
 #include <stdio.h>
 #include <stdlib.h>
+//created by pawpepe
 
-
-// Implement doubly linked list
-//
 struct node{
   struct node *prev;
   int n;
   struct node *next;
 };
 
+// Hash Function
 int hashFunc(int value){
   int hashSize = 16;
   int result = value%hashSize;
@@ -18,6 +16,7 @@ int hashFunc(int value){
   return value%hashSize;
 }
 
+//Create a new node
 struct node* createNode(int value){
   struct node* newNode;
   newNode = (struct node*)malloc(1*sizeof(struct node*));
@@ -27,7 +26,7 @@ struct node* createNode(int value){
   return newNode;
 }
 
-// binary search...
+// Search the node on the doubly linked list with the valued specified
 int search(int value, struct node **hash, int index ){
   struct node* aux =  hash[index];
   if(aux == NULL){
@@ -42,7 +41,7 @@ int search(int value, struct node **hash, int index ){
   return value; // value is on the Hash
 }
 
-// insert nodes at the doubly ordered list
+// Insert nodes at the doubly ordered list
 void insert(int value, struct node **hash, int *sizeVector, int index){
     struct node*  newNode = createNode(value);
     struct node* aux = hash[index];
@@ -83,7 +82,7 @@ void insert(int value, struct node **hash, int *sizeVector, int index){
 
 }
 
-
+//Prints the menu and gets the value for the option chosen
 void menu(int *opcao){
   printf("\n1.Insertion \n");
   printf("2.Remove \n");
@@ -94,7 +93,7 @@ void menu(int *opcao){
   scanf("%d", opcao);
 }
 
-
+// remove node with the valued specified
 int removeKey(int value, struct node **hash, int *sizeVector, int index){
     struct node* aux =  hash[index];
     struct node* aux2;
@@ -115,13 +114,12 @@ int removeKey(int value, struct node **hash, int *sizeVector, int index){
       // When there is only one node on the list
       if(aux->next == NULL && aux->prev == NULL){
           hash[index] = NULL;
-        }
+      }
       // when the node is the first on the list
       else if(aux->prev == NULL && (aux->next != NULL)){ // checks if the node to be removed is the first on the list
             aux2 = aux->next;
             aux2->prev = NULL;
             hash[index] = aux->next;
-
       }
       // when the node to be removed is the last on the list
       else if(aux->next == NULL){
@@ -137,13 +135,11 @@ int removeKey(int value, struct node **hash, int *sizeVector, int index){
           printf("value %d was removed.\n", value);
         }
       }
-
       sizeVector[index]--;
       return value;
 }
 
-
-
+//Prints all elements of the Hash table
 void printHash(struct node **hash){
     struct node * aux;
     int i;
@@ -157,7 +153,6 @@ void printHash(struct node **hash){
         printf("%d ", aux->n);
         aux = aux->next;
       }
-
       printf("\n");
     }
 }
@@ -201,9 +196,6 @@ void main(){
     else if(option==4){
       printHash(hash);
     }
-
     menu(&option);
   }
-
-
 }
