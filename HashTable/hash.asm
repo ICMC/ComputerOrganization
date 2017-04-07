@@ -17,6 +17,45 @@
 #usar variaveis para programar, nao armazenar valores nos registradores.
 #Leve em conta que
 
+
+
+.globl main
+main:
+
+#chamar menu
+
+#ler opcao na main; guarda opcao em um reg Z
+#ler valor na main; guardar em um reg X
+#calcular index; guardar valor em um reg Y
+
+#fazer um loop pra chamar a funcao de acordo com a escolha do usuario
+	
+	callMenu:
+		jal printMenu 
+	
+	loop_option:
+		
+		beq $t1, 1, insert
+		
+		#beq $v0, 2, remove 
+		
+		#beq $v0, 3, search 
+		
+		#beq $v0, 4, printHash
+		
+		#beq $v0, 5, exit_loop
+		
+		li $v0, 4
+		la $a0, notValid
+		syscall
+		
+		j callMenu 
+  #
+	exit_loop:
+
+
+
+
 calloc:
 
 # $v0 =  returns option
@@ -30,10 +69,11 @@ printMenu:
 	la $a0, option
 	syscall 
 	
-	
+
 	li $v0, 5 #reading an interger 
 	syscall 
 	
+	la $t1,($v0)
 	jr $ra		
 	
 # $a0 = numero
@@ -73,36 +113,3 @@ remove:
 #
 printHash:
 	j callMenu
-
-.globl main
-main:
-
-#chamar menu
-
-#ler opcao na main; guarda opcao em um reg Z
-#ler valor na main; guardar em um reg X
-#calcular index; guardar valor em um reg Y
-
-#fazer um loop pra chamar a funcao de acordo com a escolha do usuario
-	
-	callMenu:
-		jal printMenu 
-	
-	loop_option:
-	
-		beq $v0, 1, insert
-		
-		beq $v0, 2, remove 
-		
-		beq $v0, 3, search 
-		
-		beq $v0, 4, printHash
-		
-		beq $v0, 5, exit_loop
-		
-		li $v0, 4
-		la $a0, notValid
-		
-		j callMenu 
-  #
-	exit_loop:
