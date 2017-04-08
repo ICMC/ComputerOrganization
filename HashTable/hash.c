@@ -54,20 +54,25 @@ void insert(int value, struct node **hash, int *sizeVector, int index){
         hash[index] = newNode;
       }
       else{
-          while((aux->n < value) && (aux->next != NULL)){ // while node value is less then the value to be inserted
-            aux = aux->next;
+          while((aux->n < value)){ // while node value is less then the value to be inserted
+            if(aux->next != NULL){
+              aux = aux->next;
+            }else{
+              break;
+            }
+
           }
-          if(aux->prev == NULL){    // if the node is being inserted in the begining of the list
+          if(aux->prev == NULL && (aux->next !=NULL)){    // if the node is being inserted in the begining of the list
             hash[index] = newNode;
             newNode->next = aux;
             aux->prev = newNode;
           }
-          else if(aux->next == NULL && (aux->n < value)){ // if the node is the last one on the list
+          else if(aux->next == NULL){ // if the node is the last one on the list
             newNode->next = NULL;
             newNode->prev = aux;
             aux->next = newNode;
           }
-          else{
+          else{     // if the node is being inserted in the middle of the list
             aux2 = aux->prev;
             aux2->next = newNode;
             newNode->next = aux;
