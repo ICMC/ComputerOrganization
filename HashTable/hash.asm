@@ -118,8 +118,9 @@ search:
 
 	j callMenu
 
-
+#s1 = index 
 insert:
+	
 	j callMenu
 
 
