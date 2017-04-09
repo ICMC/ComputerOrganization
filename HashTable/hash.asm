@@ -18,10 +18,6 @@
 #Leve em conta que
 
 
-
-.globl main
-main:
-
 #chamar menu
 
 #ler opcao na main; guarda opcao em um reg Z
@@ -29,22 +25,32 @@ main:
 #calcular index; guardar valor em um reg Y
 
 #fazer um loop pra chamar a funcao de acordo com a escolha do usuario
+
+#$s0 = index 
+#$s1 = option 
+#$s2 = node 
+#
+
+
+.globl main
+main:
 	jal calloc
 	
 	callMenu:
 		jal printMenu 
+		
 	
 	loop_option:
 		
-		beq $t1, 1, insert
+		beq $s1, 1, insert
 		
-		beq $v0, 2, remove 
+		beq $s1, 2, remove 
 		
-		beq $v0, 3, search 
+		beq $s1, 3, search 
 		
-		beq $v0, 4, printHash
+		beq $s1, 4, printHash
 		
-		beq $v0, 5, exit_loop
+		beq $s1, 5, exit_loop
 		
 		li $v0, 4
 		la $a0, notValid
@@ -78,11 +84,10 @@ calloc:
 	lw $t1, 56($a0)
 	lw $t1, 60($a0)
 	
-
 	jr $ra	
 		
 
-# $v0 =  returns option
+# $s1 =  returns option
 printMenu:
 	li $v0, 4 		# system call code for printing string = 4
 	la $a0, menu		# load address of string to be printed into $a0
@@ -97,11 +102,11 @@ printMenu:
 	li $v0, 5 #reading an interger 
 	syscall 
 	
-	la $t1,($v0)
+	move $s1, $v0
 	jr $ra		
 	
 # $a0 = numero
-# $v0 = retorna mod
+# $s0 = retorna mod
 hashFunc:
 	
 	li $a1, 16			  # $a1 = 16, 16 eh o valor do mod, usado na comparacao
@@ -115,6 +120,7 @@ hashFunc:
 		
 	mod_endloop:
 		add $v0, $zero, $a0	  # $v0 = $zero + $a0; index = 0 + result; index = result;
+		move $s0, $v0		  # move o valor de $v0 para $s0
 		jr $ra			  # retorne a execucao do programa principal
 					  # RETORNA em $v0 o resultado do mod
 		
@@ -127,6 +133,11 @@ search:
 
 
 insert:
+	#use instruction syscall 9 to allocate memory on the heap 
+	li $v0, 9   #instruction to allocate memory on the heap 
+	la $a0, 12  #tells how much space has to be allocated 
+	syscall 
+	
 	j callMenu
 
 
