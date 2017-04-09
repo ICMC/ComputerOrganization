@@ -29,6 +29,7 @@ main:
 #calcular index; guardar valor em um reg Y
 
 #fazer um loop pra chamar a funcao de acordo com a escolha do usuario
+	jal calloc
 	
 	callMenu:
 		jal printMenu 
@@ -37,13 +38,13 @@ main:
 		
 		beq $t1, 1, insert
 		
-		#beq $v0, 2, remove 
+		beq $v0, 2, remove 
 		
-		#beq $v0, 3, search 
+		beq $v0, 3, search 
 		
-		#beq $v0, 4, printHash
+		beq $v0, 4, printHash
 		
-		#beq $v0, 5, exit_loop
+		beq $v0, 5, exit_loop
 		
 		li $v0, 4
 		la $a0, notValid
@@ -57,6 +58,29 @@ main:
 
 
 calloc:
+	la $a0, hash #loadnig the beginning of the string address to $a0
+	li $t1, 0
+	#set all spaces allocated to hash to 0
+	lw $t1, 0($a0)
+	lw $t1, 4($a0)
+	lw $t1, 8($a0)
+	lw $t1, 12($a0)
+	lw $t1, 16($a0)
+	lw $t1, 20($a0)
+	lw $t1, 24($a0)
+	lw $t1, 28($a0)
+	lw $t1, 32($a0)
+	lw $t1, 36($a0)
+	lw $t1, 40($a0)
+	lw $t1, 44($a0)
+	lw $t1, 48($a0)
+	lw $t1, 52($a0)
+	lw $t1, 56($a0)
+	lw $t1, 60($a0)
+	
+
+	jr $ra	
+		
 
 # $v0 =  returns option
 printMenu:
