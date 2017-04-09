@@ -67,23 +67,15 @@ calloc:
 	la $a0, hash #loadnig the beginning of the string address to $a0
 	li $t1, 0
 	#set all spaces allocated to hash to 0
-	lw $t1, 0($a0)
-	lw $t1, 4($a0)
-	lw $t1, 8($a0)
-	lw $t1, 12($a0)
-	lw $t1, 16($a0)
-	lw $t1, 20($a0)
-	lw $t1, 24($a0)
-	lw $t1, 28($a0)
-	lw $t1, 32($a0)
-	lw $t1, 36($a0)
-	lw $t1, 40($a0)
-	lw $t1, 44($a0)
-	lw $t1, 48($a0)
-	lw $t1, 52($a0)
-	lw $t1, 56($a0)
-	lw $t1, 60($a0)
-	
+	li $t2, 16
+	li $t3, 2
+	callocLoop:
+		beq $t1,$t2, exitCallocLoop
+		lw $t1, 0($a0)
+		add  $a0, $t3,$t3 # add 4 to $a0
+		addi $t1,$t1,1    # add +1 to $t1
+	j callLoop
+	exitCallocLoop:
 	jr $ra	
 		
 
@@ -133,10 +125,33 @@ search:
 
 
 insert:
+	la $a1, hash  # moving address of the beginning of hash to $a0
+	
 	#use instruction syscall 9 to allocate memory on the heap 
 	li $v0, 9   #instruction to allocate memory on the heap 
 	la $a0, 12  #tells how much space has to be allocated 
 	syscall 
+	
+	move $s2, $v0 #moving temporary node to $s2 register 
+	
+	add $t1, $s0, $s0 #multiplying the index by 2x
+	add $t1, $t1, $t1 # multiplying the index by 2x again (4x)
+	add $a1, $a0, $t1 # getting the address of hash[index]
+	
+	beq $a1,0,empty #if there is no node(key) inserted on that position of the hash
+	j initialized
+	
+	empty:
+		sw $s2, 0($a1) #storing the address of the first node on hash[index]
+		li $t1, 0
+		sw $t1, 0($s2) #setting node->prev as NULL
+		sw $t1, 8($s2) #setting node->next as NULL
+		
+	
+	initialized: # if there is already nodes on that position of the hash
+	
+	
+	
 	
 	j callMenu
 
