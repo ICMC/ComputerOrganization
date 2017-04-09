@@ -17,11 +17,6 @@
 #usar variaveis para programar, nao armazenar valores nos registradores.
 #Leve em conta que
 
-
-
-.globl main
-main:
-
 #chamar menu
 
 #ler opcao na main; guarda opcao em um reg Z
@@ -30,20 +25,41 @@ main:
 
 #fazer um loop pra chamar a funcao de acordo com a escolha do usuario
 	
+
+#-------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
+#                                 IMPORTANTE!!!
+# usar registradores de $s0 ate $s7 pra salvar valores importantes temporarios
+#
+# $s0 - Index, mod da funcao hash
+# $s1 - opcao do Menu 
+# $s2 - 
+# $s3 - 
+# $s4 -
+# $s5 -
+# $s6 -
+# $s7 - 
+
+#---------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------
+
+
+.globl main
+main:
 	callMenu:
 		jal printMenu 
 	
 	loop_option:
 		
-		beq $t1, 1, insert
+		beq $s1, 1, insert
 		
-		#beq $v0, 2, remove 
+		beq $s1, 2, remove 
 		
-		#beq $v0, 3, search 
+		beq $s1, 3, search 
 		
-		#beq $v0, 4, printHash
+		beq $s1, 4, printHash
 		
-		#beq $v0, 5, exit_loop
+		beq $s1, 5, exit_loop
 		
 		li $v0, 4
 		la $a0, notValid
@@ -58,7 +74,7 @@ main:
 
 calloc:
 
-# $v0 =  returns option
+# $s1 =  returns option
 printMenu:
 	li $v0, 4 		# system call code for printing string = 4
 	la $a0, menu		# load address of string to be printed into $a0
@@ -73,11 +89,11 @@ printMenu:
 	li $v0, 5 #reading an interger 
 	syscall 
 	
-	la $t1,($v0)
+	move $s1, $v0
 	jr $ra		
 	
 # $a0 = numero
-# $v0 = retorna mod
+# $s0 = retorna mod
 hashFunc:
 	
 	li $a1, 16			  # $a1 = 16, 16 eh o valor do mod, usado na comparacao
@@ -91,6 +107,7 @@ hashFunc:
 		
 	mod_endloop:
 		add $v0, $zero, $a0	  # $v0 = $zero + $a0; index = 0 + result; index = result;
+		move $s0, $v0		  # movendo valor de $v0 para $s0
 		jr $ra			  # retorne a execucao do programa principal
 					  # RETORNA em $v0 o resultado do mod
 		
