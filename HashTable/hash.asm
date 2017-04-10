@@ -9,6 +9,7 @@
  	menu:	.asciiz "1. Insert Key\n2. Remove Key\n3. Search Key\n4. Print Hash\n5. Exit \n"
 	option: .asciiz "What option: \n"
 	notValid: .asciiz "Option not valid! \n" 
+	value: .asciiz "What value:"
 .text
 # node:   prev (4bytes)
 #         valor (4bytes)
@@ -65,21 +66,24 @@ main:
 
 calloc:
 	la $a0, hash #loadnig the beginning of the string address to $a0
+	li $t0, 0
 	li $t1, 0
 	#set all spaces allocated to hash to 0
 	li $t2, 16
 	li $t3, 2
 	callocLoop:
+	
 		beq $t1,$t2, exitCallocLoop
-		lw $t1, 0($a0)
-		add  $a0, $t3,$t3 # add 4 to $a0
-		addi $t1,$t1,1    # add +1 to $t1
-	j callLoop
+			la $t0, 0($a0)
+			add  $a0, $t3,$t3 # add 4 to $a0
+			addi $t1,$t1,1    # add +1 to $t1
+		j callocLoop
 	exitCallocLoop:
 	jr $ra	
 		
 
 # $s1 =  returns option
+# $s3 =  returns value the user wants to inset, delete, search 
 printMenu:
 	li $v0, 4 		# system call code for printing string = 4
 	la $a0, menu		# load address of string to be printed into $a0
@@ -95,11 +99,23 @@ printMenu:
 	syscall 
 	
 	move $s1, $v0
+
+	
+	li $v0, 4  #asking what value the user wants to insert, search, delete
+	la $a0, value
+	syscall
+		
+	li $v0, 5 #reading an interger 
+	syscall 
+		
+	move $s3, $v0
+	
 	jr $ra		
 	
 # $a0 = numero
 # $s0 = retorna mod
 hashFunc:
+	move $a0, $s3 
 	
 	li $a1, 16			  # $a1 = 16, 16 eh o valor do mod, usado na comparacao
 	li $a2, -16			  # $a2 = -16, usado na subtracao
@@ -134,7 +150,7 @@ insert:
 	
 	move $s2, $v0 #moving temporary node to $s2 register 
 	
-	add $t1, $s0, $s0 #multiplying the index by 2x
+	add $t1, $s0, $s0 #multiplying the index($s0) by 2x
 	add $t1, $t1, $t1 # multiplying the index by 2x again (4x)
 	add $a1, $a0, $t1 # getting the address of hash[index]
 	
@@ -142,18 +158,29 @@ insert:
 	j initialized
 	
 	empty:
-		sw $s2, 0($a1) #storing the address of the first node on hash[index]
+		sw $s2, ($a1) #storing the address of the first node on hash[index]
 		li $t1, 0
 		sw $t1, 0($s2) #setting node->prev as NULL
 		sw $t1, 8($s2) #setting node->next as NULL
 		
+		j endInsert 
 	
 	initialized: # if there is already nodes on that position of the hash
+		
+		move $t6, $a1 
+		la $t4, 8($t6) #acessing node->next 
+		la $t5, 4($t6) 
+		bge $s3,$t5, endDoubly #if node-> next == NULL exit loop 
+			
+			
+		endDoubly:
+		# loop the doubly linked list to find where to insert 
+		# insert head
+		# insert middle
+		# insert tail 
 	
-	
-	
-	
-	j callMenu
+	endInsert:
+		j callMenu
 
 
 #valor = registar X ; hash - variavel global; listSize - var global ; index - registrador Y
