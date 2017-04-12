@@ -115,11 +115,11 @@ hashFunc:
 	
 
 # $a0 = numero a ser buscado
-# $v0 = retorno da busca (0 = não esta na tabela, 1 = esta na tabela)
+# $v0 = retorno da busca (0 = nÃ£o esta na tabela, 1 = esta na tabela)
 search:
 	# ENCONTRAR LISTA DE COLISOES A BUSCAR O ELEMENTO
-	jal hashFunc			# chama função hash, que retorna o index em $s0
-	la $t0, hash			# REGISTER $t0: endereço da primeira posição da hash
+	jal hashFunc			# chama funÃ§Ã£o hash, que retorna o index em $s0
+	la $t0, hash			# REGISTER $t0: endereÃ§o da primeira posiÃ§Ã£o da hash
 	
 	add $s0, $s0, $s0		# multiplicando o hash index ($s0) por 2
 	add $s0, $s0, $s0		# multiplicando o hash index ($s0) por 2
@@ -132,21 +132,21 @@ search:
 		
 	# comeca a busca pelo elemento na lista de colisoes indicada por hash[index]		
 	searchLoop:
-		# CHECAR A VALIDADE DO NÓ ATUAL	
+		# CHECAR A VALIDADE DO NÃ“ ATUAL	
 		beq $t0, $zero,	searchNotFound	# caso ele tenha encontrado um no vazio na lista
 						# antes de encontrar o elemento ou a lista esteja
 						# vazia, o elemento nao foi encontrado
 		
-		# CHECAR SE O ELEMENTO PROCURADO ESTÁ NO NÓ ATUAL
-		lw $t1, 4($t0)			# REGISTER $t1: elemento do nó atual
+		# CHECAR SE O ELEMENTO PROCURADO ESTÃ NO NÃ“ ATUAL
+		lw $t1, 4($t0)			# REGISTER $t1: elemento do nÃ³ atual
 		beq $t1, $a0, searchFound	# caso o elemento do no atual seja igual ao
 						# elemento buscado, o elemento foi encontrado
 		
 		# MOVIMENTACAO SEQUENCIAL PELA LISTA			
-		lw $t1, 8($t0)			# REGISTER $t1: endereço do próximo nó da lista
-		move $t1, $t0			# REGISTER $t0: endereco do nó atual agora é o próximo
-						# assim, é possivel percorrer a lista nó a nó
-		j searchLoop			# volte ao inicio do loop, para testar um novo nó
+		lw $t1, 8($t0)			# REGISTER $t1: endereÃ§o do prÃ³ximo nÃ³ da lista
+		move $t1, $t0			# REGISTER $t0: endereco do nÃ³ atual agora Ã© o prÃ³ximo
+						# assim, Ã© possivel percorrer a lista nÃ³ a nÃ³
+		j searchLoop			# volte ao inicio do loop, para testar um novo nÃ³
 					
 	searchNotFound:
 		li $v0, 0		# colocando 0 em $v0 para indicar que o elemento nao esta na tabela hash
@@ -161,8 +161,86 @@ search:
 #s1 = index 
 insert:
 	
-	j callMenu
+	insert:
 
+	jal hashFunc #chama funcao hash -> obtenho index endereco ta no s0
+
+	li $v0, 5 #reading an interger
+
+	la $a1, hash  # moving address of the beginning of hash to $a0
+	mul $t1, $s0, 4 #s0 tem valor do index (x4, pois um int tem 4 bytes)
+	add $a1, $a1, $t1 # atribui a a1 a posicao da hash que o novo no sera inserido
+
+	la $a2, listSize # encontra posicao do vetor com o tamanho de cada lista
+	add $a2, $a2, $t1	
+	
+	jal search # verifica se ainda  nao existe no com esse valor
+	
+	beq $s1, -1, checkEmpty # se ainda nao existir o valor lido, cria no
+	
+
+	checkEmpty:
+
+		# create new node
+		#use instruction syscall 9 to allocate memory on the heap 
+		li $v1, 9   #instruction to allocate memory on the heap 
+		la $a0, 12  #tells how much space has to be allocated  (4 next, 4 previous, 4 int)
+		syscall
+		move 4($a0), $v0 #atribui valor lido a new_node->value
+
+		move $s2, $v1 #moving temporary node to $s2 register 	
+		
+		beq $a2, 0, insertFirstNode #check if the list is null
+		
+# node:   prev (4bytes)
+#         valor (4bytes)
+#         next  (4bytes)
+
+	insertNode:
+
+		move $t6, $a1 #movind the address of the first node on hash[index]
+		ble 4($a0), 4($t6), insertBeginning #(brench if less or equal) if the new node's position is the begining
+		j loopFindPosition
+	
+	insertBeginning:
+		
+		move $a1, $a0 # novo no se torna primeiro da lista
+		la 8($a1), $t6 #  novo_no->next = ex_primeiro da lista
+		la 0($t6), $a1 # ex primeiro no->previous = novo no
+		add $a2, $a2, 1 # soma 1 no listSize (conta elementos das listas)
+		j call menu
+		
+	loopFindPosition:
+	
+		ble 4($a0), 4($t6), insertMidle #(brench if less or equal) if new node < aux
+		beq $t1,$t6, insertEnd #if node-> next == NULL exit loop 
+		la $t6, 8($t6) #acessing node->next  
+		j loopFindEnd
+	
+	inserMidle:
+		
+		la 0($a0), 0($t6) #new_node->prev = aux->prev
+		la 0($t6), $a0 # aux->prev = new_node
+		la 8($a0), $t6 # new_node->next = aux
+
+		j callMenu
+
+	insertEnd:
+
+		la 0($a0), $t6 #new_node->prev = aux
+		la 8($t6), $a0 #aux->next = new_node
+		
+
+	insertFirstNode:
+		sw $s2, ($a1) #storing the address of the first node on hash[index]
+		li $t1, 0
+		sw $t1, 0($s2) #setting node->prev as NULL
+		sw $v0, 4($s2) #setting node->value
+		sw $t1, 8($s2) #setting node->next as NULL
+		
+		add $a2, $a2, 1 # soma 1 no listSize (conta elementos das listas)
+	
+		j callMenu		
 
 #valor = registar X ; hash - variavel global; listSize - var global ; index - registrador Y
 remove:
