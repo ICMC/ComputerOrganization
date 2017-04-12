@@ -114,11 +114,50 @@ hashFunc:
 			
 	
 
-#a1 = numero a ser buscado
+# $a0 = numero a ser buscado
+# $v0 = retorno da busca (0 = não esta na tabela, 1 = esta na tabela)
 search:
-
-	j callMenu
-
+	# ENCONTRAR LISTA DE COLISOES A BUSCAR O ELEMENTO
+	jal hashFunc			# chama função hash, que retorna o index em $s0
+	la $t0, hash			# REGISTER $t0: endereço da primeira posição da hash
+	
+	add $s0, $s0, $s0		# multiplicando o hash index ($s0) por 2
+	add $s0, $s0, $s0		# multiplicando o hash index ($s0) por 2
+					# agora, com o index multiplicado por 4 (numero de bytes no int),
+					# eh possivel acessar esse campo na tabela hash
+					
+	add $t0, $t0, $s0		# soma o numero de bytes a andar a partir do ponteiro
+					# do inicio da tabela hash
+					# REGISTER $t0: endereco da posicao index da hash (hash[index])
+		
+	# comeca a busca pelo elemento na lista de colisoes indicada por hash[index]		
+	searchLoop:
+		# CHECAR A VALIDADE DO NÓ ATUAL	
+		beq $t0, $zero,	searchNotFound	# caso ele tenha encontrado um no vazio na lista
+						# antes de encontrar o elemento ou a lista esteja
+						# vazia, o elemento nao foi encontrado
+		
+		# CHECAR SE O ELEMENTO PROCURADO ESTÁ NO NÓ ATUAL
+		lw $t1, 4($t0)			# REGISTER $t1: elemento do nó atual
+		beq $t1, $a0, searchFound	# caso o elemento do no atual seja igual ao
+						# elemento buscado, o elemento foi encontrado
+		
+		# MOVIMENTACAO SEQUENCIAL PELA LISTA			
+		lw $t1, 8($t0)			# REGISTER $t1: endereço do próximo nó da lista
+		move $t1, $t0			# REGISTER $t0: endereco do nó atual agora é o próximo
+						# assim, é possivel percorrer a lista nó a nó
+		j searchLoop			# volte ao inicio do loop, para testar um novo nó
+					
+	searchNotFound:
+		li $v0, 0		# colocando 0 em $v0 para indicar que o elemento nao esta na tabela hash
+		jr $ra			# retorna a execucao do programa principal
+					# RETORNA $v0 = 0, para indicar que o numero nao foi achado
+					
+	searchFound:
+		li $v0, 1		# colocando 1 em $v0 para indicar que o elemento esta na tabela hash
+		jr $ra			# retorna a execucao do programa principal
+					# RETORNA $v0 = 1, para indicar que o numero foi achado
+	
 #s1 = index 
 insert:
 	
