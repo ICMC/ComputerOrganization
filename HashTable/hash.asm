@@ -114,6 +114,7 @@ hashFunc:
 			
 	
 
+#a1 = numero a ser buscado
 search:
 
 	j callMenu
