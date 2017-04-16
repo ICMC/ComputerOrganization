@@ -6,9 +6,10 @@
  	listSize:.space 64 #vector de 16 posicoes pra armazernar o tamanha de cada lista encadeada
  	#hash:   .word 16  mesma coisa que  .space 64
 .align 0  
- 	menu:	.asciiz "1. Insert Key\n2. Remove Key\n3. Search Key\n4. Print Hash\n5. Exit \n"
-	option: .asciiz "What option: \n"
-	notValid: .asciiz "Option not valid! \n" 
+ 	menu:		.asciiz "1. Insert Key\n2. Remove Key\n3. Search Key\n4. Print Hash\n5. Exit \n"
+	option: 	.asciiz "What option: \n"
+	notValid: 	.asciiz "Option not valid! \n" 
+	inexistent: 	.asciiz "Value not found on the hash!"
 .text
 # node:   prev (4bytes)
 #         valor (4bytes)
@@ -137,7 +138,7 @@ search:
 						# antes de encontrar o elemento ou a lista esteja
 						# vazia, o elemento nao foi encontrado
 		
-		# CHECAR SE O ELEMENTO PROCURADO ESTÁ NO NÓ ATUAL
+		# CHECAR SE O ELEMENTO PROCURADO EST�? NO NÓ ATUAL
 		lw $t1, 4($t0)			# REGISTER $t1: elemento do nó atual
 		beq $t1, $a0, searchFound	# caso o elemento do no atual seja igual ao
 						# elemento buscado, o elemento foi encontrado
@@ -160,12 +161,10 @@ search:
 	
 #s1 = index 
 insert:
-	
-	insert:
 
 	jal hashFunc #chama funcao hash -> obtenho index endereco ta no s0
 
-	li $v0, 5 #reading an interger
+	li $v0, 5 #reading an interger ( cade o syscall ? porque esta lendo uma interger???)
 
 	la $a1, hash  # moving address of the beginning of hash to $a0
 	mul $t1, $s0, 4 #s0 tem valor do index (x4, pois um int tem 4 bytes)
@@ -179,7 +178,7 @@ insert:
 	beq $s1, -1, checkEmpty # se ainda nao existir o valor lido, cria no
 	
 
-	checkEmpty:
+	checkEmpty: #nome dessa tag esta ambigua, parece que esta verificando se nao existe nenhum node 
 
 		# create new node
 		#use instruction syscall 9 to allocate memory on the heap 
@@ -243,8 +242,25 @@ insert:
 		j callMenu		
 
 #valor = registar X ; hash - variavel global; listSize - var global ; index - registrador Y
-remove:
+
+remove:	
+	jal hashFunc #chama funcao hash -> obtenho index endereco ta no s0
+	jal search # verifica se ainda  nao existe no com esse valor
+	beq $s1, -1, printNotFound # se ainda nao existir o valor lido, cria no
+	
+	
+	
 	j callMenu
+	
+	printNotFound:
+		li $vi, 4
+		la $a0, inexistent #prints that the value does not exists on the hash
+		syscall 
+		
+		j callMenu #returns to menu 
+	
+	
+	
 
 #
 printHash:
