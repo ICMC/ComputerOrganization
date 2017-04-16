@@ -9,7 +9,8 @@
  	menu:		.asciiz "1. Insert Key\n2. Remove Key\n3. Search Key\n4. Print Hash\n5. Exit \n"
 	option: 	.asciiz "What option: \n"
 	notValid: 	.asciiz "Option not valid! \n" 
-	inexistent: 	.asciiz "Value not found on the hash!"
+	inexistent: 	.asciiz "Value not found on the hash!\n"
+	number: 	.asciiz "what number: \n"
 .text
 # node:   prev (4bytes)
 #         valor (4bytes)
@@ -36,7 +37,7 @@
 # $s1 - opcao do Menu 
 # $s2 - 
 # $s3 - 
-# $s4 -
+# $s4 - number provided by the user 
 # $s5 -
 # $s6 -
 # $s7 - 
@@ -91,6 +92,16 @@ printMenu:
 	syscall 
 	
 	move $s1, $v0
+	
+	li $v0, 4
+	la $a0, number 
+	syscall 
+	
+	li $v0, 5 
+	syscall 
+	
+	move $s4, $v0
+	
 	jr $ra		
 	
 # $a0 = numero
@@ -241,16 +252,68 @@ insert:
 	
 		j callMenu		
 
-#valor = registar X ; hash - variavel global; listSize - var global ; index - registrador Y
 
+#s0 == index 
 remove:	
 	jal hashFunc #chama funcao hash -> obtenho index endereco ta no s0
 	jal search # verifica se ainda  nao existe no com esse valor
 	beq $s1, -1, printNotFound # se ainda nao existir o valor lido, cria no
 	
+	li $t2, 4  
+	mul $t1, $s1, $t2 #multiplying the index by 4 to find the "Real index" on the hash 
+			  #Another possibility is to change the hashFunc to return the mod multiplied by 4 , which will be the real address 
 	
+	la $t3, hash     #loading address of hash to $t3
+
+	add $t3, $t3, $t2 #adding the index to the hash address to get to the address where is the node to be deleted. 
 	
-	j callMenu
+	#loop to find the node to be deleted on the linked list 
+	
+	move $t4, $t3 
+	
+	FindNode: 
+		lw $t5, 4($t4) 
+		beq $t5, $s4, deleteNode
+		la $t4, 8($t4) # $t4 = $t4->next 
+		j FindNode 
+	
+	deleteNode:
+		lw $t1, 0($t4) 
+		li $t2, 0
+		
+		beq $t1, $t2, firstNode #id node->prev == 0 then it's the first node to be deleted 
+		
+		lw $t1, 8($t4)
+		beq $t1, $t2, lastNode
+		
+		
+		#middle node:
+		la $t2, 0($t4)  # getting address of the previous node of the one is being deleted 
+		la $t5, 8($t2)  # getting address to node-> next
+		lw $t5, $t1 	# setting the next node to be the next of the one is being deleted 
+		la $t6, 0($t1)  # getting the address where is stored the address of the previous node 
+		lw $t6, $t2     # setting the previous node to be the previous node of the deleted one 
+		j callMenu 
+		
+		
+		firstNode:
+			lw $t1, 8($t4) # $t1 = $t4 -> next 
+			beq $t1, $t2, unique #its the unique node on the list because node->next ==0 
+			la $t5, 0($t1) # $t5 = $t1->prev 
+			lw $t5, 0      # $t5 = $t1->prev = 0 
+			lw $t3, $t5    #hash[index] = next node of the one that is being deleted from the front 
+			
+			j callMenu
+			 	
+		unique: 
+			lw $t3, 0 #sets zero to the hash[index] , meaning that there is no node in there 
+			j callMenu 
+			
+		lastNode:
+			la $t1, 0($t4) #address of nodeDelete->prev =  $t1
+			la $t1, 8($t1) # address of  $t1->next 
+			lw $t1, 0      # set $t1->next == 0 == NULL
+			j callMenu 
 	
 	printNotFound:
 		li $vi, 4
@@ -258,8 +321,6 @@ remove:
 		syscall 
 		
 		j callMenu #returns to menu 
-	
-	
 	
 
 #
