@@ -15,7 +15,7 @@
 ## Extra 
  * Insert ordered keys 
  * Delete ordered keys  
- * Binary Search 
+ 
  
 
 
