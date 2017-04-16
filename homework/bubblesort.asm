@@ -14,27 +14,33 @@ main:
 	
 	
 	outterLoop:
-		beq $t0,$t2, endOutLoop
-			addi $t2, $t2, 1
-			li $t3, 0
-			innerLoop:
- 
-				beq $t3, $t0, outterLoop
-				la $t4, array
-				mul $t5, $t3, 4 
-				addi $t3, $t3, 1  # j++
-				add $t5, $t4, $t5 #address of array[j]
-				add $t6, $t5, 4   #address of array[j+1]
-				lw $a0,($t5) 
-				lw $a1, ($t6) 
+	beq $t0,$t2, endOutLoop
+		addi $t2, $t2, 1 #i++
+		li $t3, 0
+		la $t4, array
+			
+		innerLoop:
+		beq $t3, $t0, outterLoop
 				
-				ble $a0,$a1, innerLoop
+			addi $t3, $t3, 1  # j++
+			move $t5, $t4
+			addi $t5, $t5, 4 
+			
+			lw $a0,($t4) 
+			lw $a1, ($t5) 
 				
+			ble $a0,$a1, addArray
+					
 				#swap 
 				sw $a0, ($t5)
-				sw $a2, ($t6)
+				sw $a1, ($t4)
 				
-				j innerLoop
+				addi $t4, $t4, 4 	
+			j innerLoop
+			
+			addArray:
+				addi $t4, $t4, 4 
+				j innerLoop	
 				
 	endOutLoop:
 	jal print 
