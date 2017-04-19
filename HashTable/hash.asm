@@ -196,6 +196,7 @@ insert:
 		li $v1, 9   #instruction to allocate memory on the heap 
 		la $a0, 12  #tells how much space has to be allocated  (4 next, 4 previous, 4 int)
 		syscall
+		
 		move 4($a0), $v0 #atribui valor lido a new_node->value
 
 		move $s2, $v1 #moving temporary node to $s2 register 	
@@ -290,29 +291,31 @@ remove:
 		#middle node:
 		la $t2, 0($t4)  # getting address of the previous node of the one is being deleted 
 		la $t5, 8($t2)  # getting address to node-> next
-		lw $t5, $t1 	# setting the next node to be the next of the one is being deleted 
+		sw $t5, $t5 	# setting the next node to be the next of the one is being deleted 
 		la $t6, 0($t1)  # getting the address where is stored the address of the previous node 
-		lw $t6, $t2     # setting the previous node to be the previous node of the deleted one 
+		                # setting the previous node to be the previous node of the deleted one 
+		sw $t6, $t6
 		j callMenu 
+		sw 
 		
 		
 		firstNode:
 			lw $t1, 8($t4) # $t1 = $t4 -> next 
 			beq $t1, $t2, unique #its the unique node on the list because node->next ==0 
 			la $t5, 0($t1) # $t5 = $t1->prev 
-			lw $t5, 0      # $t5 = $t1->prev = 0 
-			lw $t3, $t5    #hash[index] = next node of the one that is being deleted from the front 
+			sw 0, $t5      # $t5 = $t1->prev = 0 
+			sw $t5, $t3    #hash[index] = next node of the one that is being deleted from the front 
 			
 			j callMenu
 			 	
 		unique: 
-			lw $t3, 0 #sets zero to the hash[index] , meaning that there is no node in there 
+			sw 0, $t3 #sets zero to the hash[index] , meaning that there is no node in there 
 			j callMenu 
 			
 		lastNode:
 			la $t1, 0($t4) #address of nodeDelete->prev =  $t1
 			la $t1, 8($t1) # address of  $t1->next 
-			lw $t1, 0      # set $t1->next == 0 == NULL
+			sw 0 , $t1     # set $t1->next == 0 == NULL
 			j callMenu 
 	
 	printNotFound:
