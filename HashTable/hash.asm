@@ -35,7 +35,7 @@
 #
 # $s0 - Index, mod da funcao hash
 # $s1 - opcao do Menu 
-# $s2 - 
+# $s2 - no encontrado pela busca
 # $s3 - 
 # $s4 - number provided by the user 
 # $s5 -
@@ -45,7 +45,8 @@
 #---------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------
 
-
+# TO DO: 
+	#Hash func retorna o endereco do index da hash e salvar em um registrador "$s4"
 .globl main
 main:
 	callMenu:
@@ -140,7 +141,8 @@ hashFunc:
 	
 
 # $a0 = numero a ser buscado
-# $v0 = retorno da busca (0 = não esta na tabela, 1 = esta na tabela)
+# $s2 = retorna endereco do no encontrado pela busca
+# caso nao encontre, retorne 0 em $s2
 search:
 	# ENCONTRAR LISTA DE COLISOES A BUSCAR O ELEMENTO
 	jal hashFunc			# chama função hash, que retorna o index em $s0
@@ -269,7 +271,7 @@ insert:
 remove:	
 	jal hashFunc #chama funcao hash -> obtenho index endereco ta no s0
 	jal search # verifica se ainda  nao existe no com esse valor
-	beq $s1, -1, printNotFound # se ainda nao existir o valor lido, cria no
+	beq $s1, 0, printNotFound # se ainda nao existir o valor lido, cria no
 	
 	li $t2, 4  
 	mul $t1, $s1, $t2 #multiplying the index by 4 to find the "Real index" on the hash 
@@ -283,11 +285,13 @@ remove:
 	
 	move $t4, $t3 
 	
-	FindNode: 
+	#$s4 contains value to be deleted 
+	lw $t4, ($t4)
+	findNode: 
 		lw $t5, 4($t4) 
 		beq $t5, $s4, deleteNode
-		la $t4, 8($t4) # $t4 = $t4->next 
-		j FindNode 
+		lw $t4, 8($t4) # $t4 = $t4->next 
+		j findNode 
 	
 	deleteNode:
 		lw $t1, 0($t4) 
@@ -330,7 +334,7 @@ remove:
 			j callMenu 
 	
 	printNotFound:
-		li $vi, 4
+		li $v1, 4
 		la $a0, inexistent #prints that the value does not exists on the hash
 		syscall 
 		
