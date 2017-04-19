@@ -75,6 +75,22 @@ main:
 
 
 calloc:
+	la $a0, hash #loadnig the beginning of the string address to $a0
+	li $t0, 0
+	li $t1, 0
+	#set all spaces allocated to hash to 0
+	li $t2, 16
+	li $t3, 2
+	callocLoop:
+	
+		beq $t1,$t2, exitCallocLoop
+			la $t0, 0($a0)
+			add  $a0, $t3,$t3 # add 4 to $a0
+			addi $t1,$t1,1    # add +1 to $t1
+		j callocLoop
+	exitCallocLoop:
+	jr $ra	
+		
 
 # $s1 =  returns option
 printMenu:
@@ -326,6 +342,30 @@ remove:
 		j callMenu #returns to menu 
 	
 
-#
-printHash:
+#la $t0, hash  #endereco da primeria posicao de hash em $t0
+	li $t1, $zero #t1 variavel contadora (i), vai ate 16(numero de posicoes na hash), para percorrer a hash
+	li $t8, 16    #usado para comparacao
+		      #for(i=0; i<16; i++)
+		      
+#loop que percorre a hash 
+printHash:	
+		beq $t1, $t8, printEnd	#sai caso $t1 == 16      
+		
+		#loop que imprime os valores contidos na lista
+		printList:
+			beq $t3, $zero, printListEnd #caso o valor seja NULL
+			
+			lw $a0, $t3 		     #coloca o valor contido no nó em $a0, para realizar o print
+			li $v0, 1		     #print int
+			syscall
+		
+			move $t3, 8($t3) 	     #$t3 recebe o endereco do prox valor, do prox no da lista
+			j printList		     #volta para o inicio do loop
+		printListEnd:		   	     #fim do loop de leitura da lista
+		
+		add $t3, $t3, 4 	#move $t3 para o prox valor da hash
+		add $t1, $t1, 1 	#i++
+		j printHash		#volta para o inicio do loop
+	printEnd: 
+	
 	j callMenu
