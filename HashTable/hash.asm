@@ -142,7 +142,7 @@ hashFunc:
 
 # $a0 = numero a ser buscado
 # $s2 = retorna endereco do no encontrado pela busca
-# caso nao encontre, retorne 0 em $s2
+# caso nao encontre, retorne 0 em $s2s
 search:
 	# ENCONTRAR LISTA DE COLISOES A BUSCAR O ELEMENTO
 	jal hashFunc			# chama função hash, que retorna o index em $s0
