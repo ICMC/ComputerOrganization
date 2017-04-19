@@ -71,9 +71,6 @@ main:
   #
 	exit_loop:
 
-
-
-
 calloc:
 	la $a0, hash #loadnig the beginning of the string address to $a0
 	li $t0, 0
@@ -109,14 +106,14 @@ printMenu:
 	
 	move $s1, $v0
 	
-	li $v0, 4
+	li $v0, 4 #ask for value 
 	la $a0, number 
 	syscall 
 	
-	li $v0, 5 
+	li $v0, 5   #read number inpupt bz the user 
 	syscall 
 	
-	move $s4, $v0
+	move $s4, $v0 #moves value to $s4
 	
 	jr $ra		
 	
@@ -196,14 +193,12 @@ insert:
 	la $a1, hash  # moving address of the beginning of hash to $a0
 	mul $t1, $s0, 4 #s0 tem valor do index (x4, pois um int tem 4 bytes)
 	add $a1, $a1, $t1 # atribui a a1 a posicao da hash que o novo no sera inserido
-
-	la $a2, listSize # encontra posicao do vetor com o tamanho de cada lista
-	add $a2, $a2, $t1	
 	
 	jal search # verifica se ainda  nao existe no com esse valor
 	
-	beq $s1, -1, checkEmpty # se ainda nao existir o valor lido, cria no
-	
+	beq $s1, 0, checkEmpty # se ainda nao existir o valor lido, cria no
+	#TO DO!!!!!!!print that value already exists on the hash table (untreaded colission)
+	j callMenu 
 
 	checkEmpty: #nome dessa tag esta ambigua, parece que esta verificando se nao existe nenhum node 
 
@@ -213,62 +208,62 @@ insert:
 		la $a0, 12  #tells how much space has to be allocated  (4 next, 4 previous, 4 int)
 		syscall
 		
-		move 4($a0), $v0 #atribui valor lido a new_node->value
-
-		move $s2, $v1 #moving temporary node to $s2 register 	
+		move $t7, $v0  # address of the new node is moved to $t7 
+		sw $s4, 4($t7) # sets nodes value to the value that $s4 contains new_node->n
 		
-		beq $a2, 0, insertFirstNode #check if the list is null
+		lw $t6, ($a1) #sets $t6 the content of $a1
+		beq $t6, 0, insertFirstNode #check if the list is null
 		
 # node:   prev (4bytes)
 #         valor (4bytes)
 #         next  (4bytes)
 
 	insertNode:
-
-		move $t6, $a1 #movind the address of the first node on hash[index]
-		ble 4($a0), 4($t6), insertBeginning #(brench if less or equal) if the new node's position is the begining
+		lw $t5, 4($t7)# gets value of new node
+		lw $t4, 4($t6) # get content of the hash
+		ble $t5, $t4, insertBeginning #(brench if less or equal) if the new node's position is the begining
 		j loopFindPosition
 	
 	insertBeginning:
 		
-		move $a1, $a0 # novo no se torna primeiro da lista
-		la 8($a1), $t6 #  novo_no->next = ex_primeiro da lista
-		la 0($t6), $a1 # ex primeiro no->previous = novo no
-		add $a2, $a2, 1 # soma 1 no listSize (conta elementos das listas)
-		j call menu
+		sw $zero, 0($t7) # new-node->prev = NULL
+		sw $t6, 8($t7)#  novo_no->next = ex_primeiro da lista
+		sw $t7, 0($t6)# ex primeiro no->previous = novo no
+		sw $t7, ($a1) #storing the address of the first node on hash[index]
+		
+		j callMenu
 		
 	loopFindPosition:
 	
-		ble 4($a0), 4($t6), insertMidle #(brench if less or equal) if new node < aux
-		beq $t1,$t6, insertEnd #if node-> next == NULL exit loop 
-		la $t6, 8($t6) #acessing node->next  
+		ble $t5, $t4, insertMiddle #(brench if less or equal) if new node < aux
+		lw $t3, 8($t4)
+		beq $zero,$t3, insertEnd #if node-> next == NULL exit loop 
+		sw $t4, 8($t4) #acessing node->next  
 		j loopFindEnd
 	
-	inserMidle:
+	insertMiddle: 
+		lw $t3, 0($t4) #get aux->prev
+		sw $t7, 8($t3) #aux->prev->next = new_node
+		sw $t3, 0($t7) # new-node->prev = aux->prev
+		sw $t4, 8($t7)#  new_node->next = aux
+		sw $t7, 0($t4) # aux->prev = new_node
 		
-		la 0($a0), 0($t6) #new_node->prev = aux->prev
-		la 0($t6), $a0 # aux->prev = new_node
-		la 8($a0), $t6 # new_node->next = aux
-
 		j callMenu
 
 	insertEnd:
-
-		la 0($a0), $t6 #new_node->prev = aux
-		la 8($t6), $a0 #aux->next = new_node
+		sw $zero, 8($t7) #new_node->next = NULL
+		sw $t7, 8($t4) # aux->next = new_node
+		sw $t4, 0($t7) # new-node->prev = aux
+				
+		j callMenu
 		
-
 	insertFirstNode:
-		sw $s2, ($a1) #storing the address of the first node on hash[index]
-		li $t1, 0
-		sw $t1, 0($s2) #setting node->prev as NULL
-		sw $v0, 4($s2) #setting node->value
-		sw $t1, 8($s2) #setting node->next as NULL
 		
-		add $a2, $a2, 1 # soma 1 no listSize (conta elementos das listas)
-	
+		sw $t7, ($a1) #storing the address of the first node on hash[index]
+		sw $zero, 0($t7) #setting node->prev as NULL
+		sw $zero, 8($t7) #setting node->next as NULL
+		
 		j callMenu		
-
 
 #s0 == index 
 remove:	
