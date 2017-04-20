@@ -11,6 +11,9 @@
 	notValid: 	.asciiz "Option not valid! \n" 
 	inexistent: 	.asciiz "Value not found on the hash!\n"
 	number: 	.asciiz "what number: \n"
+	space:		.asciiz " "
+	enter:		.asciiz "\n"
+	separator:	.asciiz ": "
 .text
 # node:   prev (4bytes)
 #         valor (4bytes)
@@ -164,7 +167,7 @@ search:
 						# antes de encontrar o elemento ou a lista esteja
 						# vazia, o elemento nao foi encontrado
 		
-		# CHECAR SE O ELEMENTO PROCURADO EST�? NO NÓ ATUAL
+		# CHECAR SE O ELEMENTO PROCURADO EST�? NO NÓ ATUAL
 		lw $t1, 4($t0)			# REGISTER $t1: elemento do nó atual
 		beq $t1, $a0, searchFound	# caso o elemento do no atual seja igual ao
 						# elemento buscado, o elemento foi encontrado
@@ -240,8 +243,8 @@ insert:
 		ble $t5, $t4, insertMiddle #(brench if less or equal) if new node < aux
 		lw $t3, 8($t4)
 		beq $zero,$t3, insertEnd #if node-> next == NULL exit loop 
-		sw $t4, 8($t4) #acessing node->next  
-		j loopFindEnd
+		lw $t4, 8($t4) #acessing node->next  
+		j loopFindPosition
 	
 	insertMiddle: 
 		lw $t3, 0($t4) #get aux->prev
@@ -310,13 +313,13 @@ remove:
 			beq $t1, $zero, unique #its the unique node on the list because node->next ==0 
 			
 			la $t5, 0($t1) # $t5 = b->prev 
-			sw 0, $t5      # $t5 = b->prev = 0 
-			sw $t5, $t3    #hash[index] = next node of the one that is being deleted from the front 
-			
+			sw $zero, 0($t5)      # $t5 = b->prev = 0 
+			sw $t5, 0($t3)    #hash[index] = next node of the one that is being deleted from the front 
+
 			j callMenu
 			 	
 		unique: 
-			sw 0, $t3 #sets zero to the hash[index] , meaning that there is no node in there 
+			sw $zero, 0($t3) #sets zero to the hash[index] , meaning that there is no node in there 
 			j callMenu 
 		
 		# exemple of linked list: (head)->a->b->c	
@@ -324,7 +327,7 @@ remove:
 		lastNode:
 			la $t1, 0($s2) # $t1 = c->prev  
 			la $t1, 8($t1) # $t1 =  b->next  
-			sw 0 , $t1     # b->next = 0
+			sw $zero , 0($t1)     # b->next = 0
 			j callMenu 
 	
 	printNotFound:
@@ -335,30 +338,55 @@ remove:
 		j callMenu #returns to menu 
 	
 
-#la $t0, hash  #endereco da primeria posicao de hash em $t0
-	li $t1, $zero #t1 variavel contadora (i), vai ate 16(numero de posicoes na hash), para percorrer a hash
-	li $t8, 16    #usado para comparacao
-		      #for(i=0; i<16; i++)
+
+	
 		      
 #loop que percorre a hash 
 printHash:	
-		beq $t1, $t8, printEnd	#sai caso $t1 == 16      
+		la $t0, hash  #endereco da primeria posicao de hash em $t0
+		li $t1, 0 #t1 variavel contadora (i), vai ate 16(numero de posicoes na hash), para percorrer a hash
+		li $t8, 16    #usado para comparacao
+		      #for(i=0; i<16; i++)
+	
+	printStartLoop:
+		beq $t1, $t8, printEnd	#sai caso $t1 == 16
+		lw $t3, 0($t0) #recebe o endereco da primeiro no     
+				
+		#printa a posição na hash
+		move $a0, $t1
+		li $v0, 1
+		syscall
+		#printa os dois pontos e o espaço ": "
+		la $a0, separator
+		li $v0, 4
+		syscall
 		
 		#loop que imprime os valores contidos na lista
 		printList:
+			#t3 = variavel que percorre os valores da lista
 			beq $t3, $zero, printListEnd #caso o valor seja NULL
-			
-			lw $a0, $t3 		     #coloca o valor contido no nó em $a0, para realizar o print
+			lw $t4, 4($t3) #$t4 recebe o valor contido no nó
+		
+			move $a0, $t4 		     #coloca o valor contido no nó em $a0, para realizar o print
 			li $v0, 1		     #print int
 			syscall
-		
-			move $t3, 8($t3) 	     #$t3 recebe o endereco do prox valor, do prox no da lista
+			
+			#printa o espaco entre os numeros
+			la $a0, space
+			li $v0, 4
+			syscall
+			
+			lw $t3, 8($t3) 	     #$t3 recebe o endereco do next, do prox no da lista
 			j printList		     #volta para o inicio do loop
 		printListEnd:		   	     #fim do loop de leitura da lista
-		
-		add $t3, $t3, 4 	#move $t3 para o prox valor da hash
-		add $t1, $t1, 1 	#i++
-		j printHash		#volta para o inicio do loop
+		#printa o \n 
+		la $a0, enter
+		li $v0, 4
+		syscall
+
+		addi $t1, $t1, 1 	#i++
+		addi $t0, $t0, 4	#t0 move para o proximo HEAD da Hash
+		j printStartLoop	#volta para o inicio do loop
 	printEnd: 
 	
 	j callMenu
