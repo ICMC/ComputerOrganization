@@ -35,7 +35,7 @@
 #
 # $s0 - Index, mod da funcao hash
 # $s1 - opcao do Menu 
-# $s2 - no encontrado pela busca
+# $s2 - noh encontrado pela busca
 # $s3 - 
 # $s4 - number provided by the user 
 # $s5 -
@@ -268,10 +268,11 @@ insert:
 		j callMenu		
 
 #s0 == index 
+#s2 - node returned by the search()
 remove:	
 	jal hashFunc #chama funcao hash -> obtenho index endereco ta no s0
 	jal search # verifica se ainda  nao existe no com esse valor
-	beq $s1, 0, printNotFound # se ainda nao existir o valor lido, cria no
+	beq $s2, 0, printNotFound # se ainda nao existir o valor lido, cria no
 	
 	li $t2, 4  
 	mul $t1, $s1, $t2 #multiplying the index by 4 to find the "Real index" on the hash 
@@ -281,44 +282,35 @@ remove:
 
 	add $t3, $t3, $t2 #adding the index to the hash address to get to the address where is the node to be deleted. 
 	
-	#loop to find the node to be deleted on the linked list 
-	
-	move $t4, $t3 
-	
 	#$s4 contains value to be deleted 
-	lw $t4, ($t4)
-	findNode: 
-		lw $t5, 4($t4) 
-		beq $t5, $s4, deleteNode
-		lw $t4, 8($t4) # $t4 = $t4->next 
-		j findNode 
+	move $t4, $s2 
 	
 	deleteNode:
-		lw $t1, 0($t4) 
-		li $t2, 0
+		lw $t1, 0($s2) 
+		beq $t1, $zero, firstNode #id node->prev == 0 then it's the first node to be deleted 
 		
-		beq $t1, $t2, firstNode #id node->prev == 0 then it's the first node to be deleted 
+		lw $t1, 8($s2)
+		beq $t1, $zero, lastNode
 		
-		lw $t1, 8($t4)
-		beq $t1, $t2, lastNode
-		
-		
+		# exemple of linked list : a<->b<->c
+		# b is being deleted 
 		#middle node:
-		la $t2, 0($t4)  # getting address of the previous node of the one is being deleted 
-		la $t5, 8($t2)  # getting address to node-> next
-		sw $t5, $t5 	# setting the next node to be the next of the one is being deleted 
-		la $t6, 0($t1)  # getting the address where is stored the address of the previous node 
-		                # setting the previous node to be the previous node of the deleted one 
-		sw $t6, $t6
+		la $t2, 0($s2)  # geting the address of node 'a' 
+		la $t5, 8($s2)  # getting address of node 'c'
+		
+		sw $t2, 0($t5) 	# previous of node 'c' is node 'a'
+		sw $t5, 8($t2)  # next of node 'a' is node 'c' 
+	                        # this way completing the deletion of node 'b'
 		j callMenu 
-		sw 
-		
-		
+	
+		# exemple of linked list: (head)->a->b->c
+		# 'a' is being deleted 
 		firstNode:
-			lw $t1, 8($t4) # $t1 = $t4 -> next 
-			beq $t1, $t2, unique #its the unique node on the list because node->next ==0 
-			la $t5, 0($t1) # $t5 = $t1->prev 
-			sw 0, $t5      # $t5 = $t1->prev = 0 
+			lw $t1, 8($s2) # $t1 = a->next  
+			beq $t1, $zero, unique #its the unique node on the list because node->next ==0 
+			
+			la $t5, 0($t1) # $t5 = b->prev 
+			sw 0, $t5      # $t5 = b->prev = 0 
 			sw $t5, $t3    #hash[index] = next node of the one that is being deleted from the front 
 			
 			j callMenu
@@ -326,11 +318,13 @@ remove:
 		unique: 
 			sw 0, $t3 #sets zero to the hash[index] , meaning that there is no node in there 
 			j callMenu 
-			
+		
+		# exemple of linked list: (head)->a->b->c	
+		# 'c' is being deleted 
 		lastNode:
-			la $t1, 0($t4) #address of nodeDelete->prev =  $t1
-			la $t1, 8($t1) # address of  $t1->next 
-			sw 0 , $t1     # set $t1->next == 0 == NULL
+			la $t1, 0($s2) # $t1 = c->prev  
+			la $t1, 8($t1) # $t1 =  b->next  
+			sw 0 , $t1     # b->next = 0
 			j callMenu 
 	
 	printNotFound:
