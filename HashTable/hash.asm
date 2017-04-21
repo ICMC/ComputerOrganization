@@ -36,7 +36,7 @@
 #                                 IMPORTANTE!!!
 # usar registradores de $s0 ate $s7 pra salvar valores importantes temporarios
 #
-# $s0 - Index, mod da funcao hash
+# $s0 - Index, mod da funcao hash, multiplicado por 4 (enderecamento a byte)
 # $s1 - opcao do Menu 
 # $s2 - noh encontrado pela busca
 # $s3 - 
@@ -53,7 +53,7 @@
 .globl main
 main:
 	callMenu:
-		jal printMenu 
+		j printMenu 
 	
 	loop_option:
 		
@@ -119,14 +119,18 @@ printMenu:
 	
 	move $s4, $v0 #moves value to $s4
 	
-	jr $ra		
+	jal hashFunc # calculating hash index for the input number
+	             # $s0 have the index
 	
-# $a0 = numero
+	j loop_option		
+	
+# $s4 = numero
 # $s0 = retorna mod
 hashFunc:
 	
 	li $a1, 16			  # $a1 = 16, 16 eh o valor do mod, usado na comparacao
 	li $a2, -16			  # $a2 = -16, usado na subtracao
+	move $a0, $s4		          # $a0 = numero digitado pelo usuario
 	
 	mod_startloop:	
 		blt $a0, $a1, mod_endloop # caso o numero ($a0) for menor que o mod ($a1),
@@ -135,82 +139,88 @@ hashFunc:
 		j mod_startloop		  # recomeca o loop
 		
 	mod_endloop:
-		add $v0, $zero, $a0	  # $v0 = $zero + $a0; index = 0 + result; index = result;
-		move $s0, $v0		  # movendo valor de $v0 para $s0
+		move $s0, $a0		  # movendo valor de $a0 para $s0
+		
+		add $s0, $s0, $s0		# multiplicando o hash index ($s0) por 2
+		add $s0, $s0, $s0		# multiplicando o hash index ($s0) por 2
+						# agora, com o index multiplicado por 4 (numero de bytes no int),
+						# eh possivel acessar esse campo na tabela hash
+		
 		jr $ra			  # retorne a execucao do programa principal
 					  # RETORNA em $v0 o resultado do mod
 		
 			
 	
 
-# $a0 = numero a ser buscado
+# $s4 = numero a ser buscado
 # $s2 = retorna endereco do no encontrado pela busca
-# caso nao encontre, retorne 0 em $s2s
+# caso nao encontre, retorne 0 em $s2
 search:
-	# ENCONTRAR LISTA DE COLISOES A BUSCAR O ELEMENTO
-	jal hashFunc			# chama função hash, que retorna o index em $s0
-	la $t0, hash			# REGISTER $t0: endereço da primeira posição da hash
-	
-	add $s0, $s0, $s0		# multiplicando o hash index ($s0) por 2
-	add $s0, $s0, $s0		# multiplicando o hash index ($s0) por 2
-					# agora, com o index multiplicado por 4 (numero de bytes no int),
-					# eh possivel acessar esse campo na tabela hash
-					
+	# EMPILHA ARGUMENTOS
+	addi $sp, $sp, -8		# aumenta tamanho da pilha em 8 bytes
+	sw $s4, 4($sp)			# salva na STACK: 4($sp) = $s4 = numero a ser buscado
+	sw $ra, 0($sp)			# salva na STACK: 0($sp) = $ra = endereco de retorno da funcao
+
+	# ENCONTRAR LISTA ENCADEADA A BUSCAR O ELEMENTO
+	la $t0, hash			# lendo endereco do inicio da tabela hash					
 	add $t0, $t0, $s0		# soma o numero de bytes a andar a partir do ponteiro
 					# do inicio da tabela hash
 					# REGISTER $t0: endereco da posicao index da hash (hash[index])
+					
+	lw $t0, 0($t0)			# le o primeiro no da lista encadeada, que esta em hash[index]
+					# REGISTER $t0: endereco do primeiro no da lista apontada por hash[index]				
 		
-	# comeca a busca pelo elemento na lista de colisoes indicada por hash[index]		
+	# INICIA BUSCA NA LISTA ENCADEADA PELO ELEMENTO PROCURADO		
 	searchLoop:
-		# CHECAR A VALIDADE DO NÓ ATUAL	
+		# CHECAR A VALIDADE DO NO ATUAL	
 		beq $t0, $zero,	searchNotFound	# caso ele tenha encontrado um no vazio na lista
 						# antes de encontrar o elemento ou a lista esteja
 						# vazia, o elemento nao foi encontrado
 		
-		# CHECAR SE O ELEMENTO PROCURADO EST�? NO NÓ ATUAL
-		lw $t1, 4($t0)			# REGISTER $t1: elemento do nó atual
-		beq $t1, $a0, searchFound	# caso o elemento do no atual seja igual ao
+		# CHECAR SE O ELEMENTO PROCURADO ESTA NO NO ATUAL
+		lw $t1, 4($t0)			# REGISTER $t1: elemento do no atual
+		beq $t1, $s4, searchFound	# caso o elemento do no atual seja igual ao
 						# elemento buscado, o elemento foi encontrado
 		
 		# MOVIMENTACAO SEQUENCIAL PELA LISTA			
-		lw $t1, 8($t0)			# REGISTER $t1: endereço do próximo nó da lista
-		move $t1, $t0			# REGISTER $t0: endereco do nó atual agora é o próximo
-						# assim, é possivel percorrer a lista nó a nó
-		j searchLoop			# volte ao inicio do loop, para testar um novo nó
+		lw $t0, 8($t0)			# REGISTER $t1: endereco do proximo no da lista
+						# assim, eh possivel percorrer a lista no a no
+		j searchLoop			# volte ao inicio do loop, para testar um novo no
 					
 	searchNotFound:
-		li $v0, 0		# colocando 0 em $v0 para indicar que o elemento nao esta na tabela hash
-		jr $ra			# retorna a execucao do programa principal
-					# RETORNA $v0 = 0, para indicar que o numero nao foi achado
+		li $s2, 0		# colocando 0 em $s2 para indicar que o elemento nao esta na tabela hash
+					# RETORNA $s2 = 0, para indicar que o numero nao foi achado
+		j searchReturn		# inicia retorno da funcao
 					
 	searchFound:
-		li $v0, 1		# colocando 1 em $v0 para indicar que o elemento esta na tabela hash
-		jr $ra			# retorna a execucao do programa principal
-					# RETORNA $v0 = 1, para indicar que o numero foi achado
+		move $s2, $t0		# colocando o endereco do no buscado em $s2
+					# RETORNA $s2 = $t0, para indicar o no onde esta o numero procurado
+		j searchReturn		# inicia retorno da funcao
+		
+	searchReturn:
+		lw $s4, 4($sp)		# recupere da STACK: $a0 = numero a ser buscado
+		lw $ra, 0($sp)		# recupere da STACK: $ra = endereco de retorno da funcao
+		addi $sp, $sp, 8	# retorna pilha ao tamanho original
+		jr $ra			# termina a funcao e retorna ao procedimento anterior
 	
 #s1 = index 
 insert:
 
-	jal hashFunc #chama funcao hash -> obtenho index endereco ta no s0
-
-	li $v0, 5 #reading an interger ( cade o syscall ? porque esta lendo uma interger???)
-
 	la $a1, hash  # moving address of the beginning of hash to $a0
-	mul $t1, $s0, 4 #s0 tem valor do index (x4, pois um int tem 4 bytes)
-	add $a1, $a1, $t1 # atribui a a1 a posicao da hash que o novo no sera inserido
+	add $a1, $a1, $s0 # atribui a a1 a posicao da hash que o novo no sera inserido
 	
 	jal search # verifica se ainda  nao existe no com esse valor
 	
-	beq $s1, 0, checkEmpty # se ainda nao existir o valor lido, cria no
+	beq $s2, 0, isntInHashYet # se ainda nao existir o valor lido, cria no
 	#TO DO!!!!!!!print that value already exists on the hash table (untreaded colission)
 	j callMenu 
 
-	checkEmpty: #nome dessa tag esta ambigua, parece que esta verificando se nao existe nenhum node 
+	isntInHashYet: 
 
 		# create new node
 		#use instruction syscall 9 to allocate memory on the heap 
-		li $v1, 9   #instruction to allocate memory on the heap 
-		la $a0, 12  #tells how much space has to be allocated  (4 next, 4 previous, 4 int)
+		li $v0, 9   #instruction to allocate memory on the heap 
+		li $a0, 12  #tells how much space has to be allocated  (4 next, 4 previous, 4 int)
 		syscall
 		
 		move $t7, $v0  # address of the new node is moved to $t7 
@@ -225,7 +235,7 @@ insert:
 
 	insertNode:
 		lw $t5, 4($t7)# gets value of new node
-		lw $t4, 4($t6) # get content of the hash
+		lw $t4, 4($t6) # get content of the hash in the auxiliar node
 		ble $t5, $t4, insertBeginning #(brench if less or equal) if the new node's position is the begining
 		j loopFindPosition
 	
@@ -240,25 +250,26 @@ insert:
 		
 	loopFindPosition:
 	
+		lw $t4, 4($t6)		   # pegando o n do no auxiliar atual
 		ble $t5, $t4, insertMiddle #(brench if less or equal) if new node < aux
-		lw $t3, 8($t4)
-		beq $zero,$t3, insertEnd #if node-> next == NULL exit loop 
-		lw $t4, 8($t4) #acessing node->next  
+		lw $t3, 8($t6)		   # pegando o proximo do no auxiliar atual
+		beq $zero,$t3, insertEnd   #if node-> next == NULL exit loop 
+		lw $t6, 8($t6) #acessing node->next  
 		j loopFindPosition
 	
 	insertMiddle: 
-		lw $t3, 0($t4) #get aux->prev
+		lw $t3, 0($t6) #get aux->prev
 		sw $t7, 8($t3) #aux->prev->next = new_node
 		sw $t3, 0($t7) # new-node->prev = aux->prev
-		sw $t4, 8($t7)#  new_node->next = aux
-		sw $t7, 0($t4) # aux->prev = new_node
+		sw $t6, 8($t7)#  new_node->next = aux
+		sw $t7, 0($t6) # aux->prev = new_node
 		
 		j callMenu
 
 	insertEnd:
 		sw $zero, 8($t7) #new_node->next = NULL
-		sw $t7, 8($t4) # aux->next = new_node
-		sw $t4, 0($t7) # new-node->prev = aux
+		sw $t7, 8($t6) # aux->next = new_node
+		sw $t6, 0($t7) # new-node->prev = aux
 				
 		j callMenu
 		
@@ -273,7 +284,7 @@ insert:
 #s0 == index 
 #s2 - node returned by the search()
 remove:	
-	jal hashFunc #chama funcao hash -> obtenho index endereco ta no s0
+
 	jal search # verifica se ainda  nao existe no com esse valor
 	beq $s2, 0, printNotFound # se ainda nao existir o valor lido, cria no
 	
@@ -298,8 +309,8 @@ remove:
 		# exemple of linked list : a<->b<->c
 		# b is being deleted 
 		#middle node:
-		la $t2, 0($s2)  # geting the address of node 'a' 
-		la $t5, 8($s2)  # getting address of node 'c'
+		lw $t2, 0($s2)  # geting the address of node 'a' 
+		lw $t5, 8($s2)  # getting address of node 'c'
 		
 		sw $t2, 0($t5) 	# previous of node 'c' is node 'a'
 		sw $t5, 8($t2)  # next of node 'a' is node 'c' 
