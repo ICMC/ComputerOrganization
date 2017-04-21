@@ -86,7 +86,7 @@ calloc:
 	callocLoop:
 	
 		beq $t1,$t2, exitCallocLoop
-			la $t0, 0($a0)
+			sw $zero, 0($a0)
 			add  $a0, $t3,$t3 # add 4 to $a0
 			addi $t1,$t1,1    # add +1 to $t1
 		j callocLoop
@@ -318,13 +318,9 @@ remove:
 	jal search # verifica se ainda  nao existe no com esse valor
 	beq $s2, 0, printNotFound # se ainda nao existir o valor lido, printe uma mensagem
 	
-	li $t2, 4  
-	mul $t1, $s1, $t2 #multiplying the index by 4 to find the "Real index" on the hash 
-			  #Another possibility is to change the hashFunc to return the mod multiplied by 4 , which will be the real address 
-	
 	la $t3, hash     #loading address of hash to $t3
 
-	add $t3, $t3, $t2 #adding the index to the hash address to get to the address where is the node to be deleted. 
+	add $t3, $t3, $s0 #adding the index to the hash address to get to the address where is the node to be deleted. 
 	
 	#$s4 contains value to be deleted 
 	move $t4, $s2 
