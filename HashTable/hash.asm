@@ -3,14 +3,15 @@
 
 .data
  	hash:    .space 64 #alocando memoria pra uma array com 16 posicoes de 4 bytes (endereco tem 4bytes)
- 	listSize:.space 64 #vector de 16 posicoes pra armazernar o tamanha de cada lista encadeada
- 	#hash:   .word 16  mesma coisa que  .space 64
+
 .align 0  
  	menu:		.asciiz "1. Insert Key\n2. Remove Key\n3. Search Key\n4. Print Hash\n5. Exit \n"
 	option: 	.asciiz "What option: \n"
 	notValid: 	.asciiz "Option not valid! \n" 
 	inexistent: 	.asciiz "Value not found on the hash!\n"
-	number: 	.asciiz "what number: \n"
+	existent:	.asciiz "This value has found on the hash!\n"
+	alreadyExists:	.asciiz "This value already is on the hash.\n"
+	number: 	.asciiz "What number: \n"
 	space:		.asciiz " "
 	enter:		.asciiz "\n"
 	separator:	.asciiz ": "
@@ -48,8 +49,6 @@
 #---------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------
 
-# TO DO: 
-	#Hash func retorna o endereco do index da hash e salvar em um registrador "$s4"
 .globl main
 main:
 	callMenu:
@@ -74,6 +73,8 @@ main:
 		j callMenu 
   #
 	exit_loop:
+		li $v0, 10
+		syscall
 
 calloc:
 	la $a0, hash #loadnig the beginning of the string address to $a0
@@ -110,6 +111,9 @@ printMenu:
 	
 	move $s1, $v0
 	
+	beq $s1, 4, dontReadANumber # se a opcao for printar toda a hash, nao leia um numero
+	beq $s1, 5, dontReadANumber # se a opcao for sair, nao leia um numero
+	
 	li $v0, 4 #ask for value 
 	la $a0, number 
 	syscall 
@@ -122,7 +126,8 @@ printMenu:
 	jal hashFunc # calculating hash index for the input number
 	             # $s0 have the index
 	
-	j loop_option		
+dontReadANumber:
+		j loop_option		
 	
 # $s4 = numero
 # $s0 = retorna mod
@@ -190,12 +195,32 @@ search:
 	searchNotFound:
 		li $s2, 0		# colocando 0 em $s2 para indicar que o elemento nao esta na tabela hash
 					# RETORNA $s2 = 0, para indicar que o numero nao foi achado
+
+		beq $s1, 3, searchPrintNotFound # caso o comando seja de busca, tambem imprima que nao foi encontrado			
+		
 		j searchReturn		# inicia retorno da funcao
+		
+	searchPrintNotFound:
+		li $v0, 4
+		la $a0, inexistent #prints that the value does not exists on the hash
+		syscall 
+		
+		j callMenu		# inicia retorno da funcao
 					
 	searchFound:
 		move $s2, $t0		# colocando o endereco do no buscado em $s2
 					# RETORNA $s2 = $t0, para indicar o no onde esta o numero procurado
+					
+		beq $s1, 3, searchPrintFound # caso o comando seja de busca, tambem imprima que foi encontrado
+		
 		j searchReturn		# inicia retorno da funcao
+		
+	searchPrintFound:
+		li $v0, 4
+		la $a0, existent #prints that the value exists on the hash
+		syscall 
+		
+		j callMenu		# inicia retorno da funcao
 		
 	searchReturn:
 		lw $s4, 4($sp)		# recupere da STACK: $a0 = numero a ser buscado
@@ -212,7 +237,12 @@ insert:
 	jal search # verifica se ainda  nao existe no com esse valor
 	
 	beq $s2, 0, isntInHashYet # se ainda nao existir o valor lido, cria no
-	#TO DO!!!!!!!print that value already exists on the hash table (untreaded colission)
+	
+	# ja existe o valor lido
+	li $v0, 4
+	la $a0, alreadyExists #prints that the value exists on the hash
+	syscall 
+	
 	j callMenu 
 
 	isntInHashYet: 
@@ -286,7 +316,7 @@ insert:
 remove:	
 
 	jal search # verifica se ainda  nao existe no com esse valor
-	beq $s2, 0, printNotFound # se ainda nao existir o valor lido, cria no
+	beq $s2, 0, printNotFound # se ainda nao existir o valor lido, printe uma mensagem
 	
 	li $t2, 4  
 	mul $t1, $s1, $t2 #multiplying the index by 4 to find the "Real index" on the hash 
@@ -342,7 +372,7 @@ remove:
 			j callMenu 
 	
 	printNotFound:
-		li $v1, 4
+		li $v0, 4
 		la $a0, inexistent #prints that the value does not exists on the hash
 		syscall 
 		
