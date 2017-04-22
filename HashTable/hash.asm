@@ -13,7 +13,9 @@
 	search1:	.asciiz "The element "
 	search2: 	.asciiz " is on hash index "
 	alreadyExists:	.asciiz "This value already is on the hash.\n"
-	number: 	.asciiz "Type a number (-1 to exit): "
+	number: 	.asciiz "Insert another number (-1 returns to menu):\n"
+	delete:		.asciiz "Remove another number(-1 returns to menu): \n"
+	wNumber:        .asciiz "What Number?\n"
 	space:		.asciiz " "
 	enter:		.asciiz "\n"
 	periodEnter:	.asciiz ".\n"
@@ -109,11 +111,16 @@ readOption:
 	move $s1, $v0 #moving op to $s1
 	
 	# testando para ver se a opcao eh valida
+	beq $s1, 4, loop_option # print nao precisa ler numero
+	beq $s1, 5, loop_option # sair nao precisa ler numero
+	
+	li $v0, 4
+	la $a0, wNumber
+	syscall
+	
 	beq $s1, 1, readNumber # insercao precisa ler um numero
 	beq $s1, 2, readNumber # remocao precisa ler um numero
 	beq $s1, 3, readNumber # busca precisa ler um numero
-	beq $s1, 4, loop_option # print nao precisa ler numero
-	beq $s1, 5, loop_option # sair nao precisa ler numero
 	
 	# caso o beq nao tenha ocorrido, opcao eh invalida
 	li $v0, 4
@@ -124,9 +131,6 @@ readOption:
 		
 		
 readNumber:
-	li $v0, 4
-	la $a0, number
-	syscall
 	
 	li $v0, 5	# read a number typed by the user
 	syscall
@@ -279,7 +283,7 @@ insert:
 	la $a0, alreadyExists #prints that the value exists on the hash
 	syscall 
 	
-	j readNumber 
+	j endInsert  
 
 	isntInHashYet: 
 
@@ -312,7 +316,7 @@ insert:
 		sw $t7, 0($t6)# ex primeiro no->previous = novo no
 		sw $t7, ($a1) #storing the address of the first node on hash[index]
 		
-		j readNumber
+		j endInsert 
 		
 	loopFindPosition:
 	
@@ -330,14 +334,14 @@ insert:
 		sw $t6, 8($t7)#  new_node->next = aux
 		sw $t7, 0($t6) # aux->prev = new_node
 		
-		j readNumber
+		j endInsert 
 
 	insertEnd:
 		sw $zero, 8($t7) #new_node->next = NULL
 		sw $t7, 8($t6) # aux->next = new_node
 		sw $t6, 0($t7) # new-node->prev = aux
 				
-		j readNumber
+		j endInsert 
 		
 	insertFirstNode:
 		
@@ -345,7 +349,15 @@ insert:
 		sw $zero, 0($t7) #setting node->prev as NULL
 		sw $zero, 8($t7) #setting node->next as NULL
 		
-		j readNumber		
+		j endInsert
+		
+	endInsert:
+		li $v0, 4
+		la $a0, number
+		syscall
+		
+		j readNumber
+			
 
 #s0 == index 
 #s2 - node returned by the search()
@@ -377,7 +389,7 @@ remove:
 		sw $t2, 0($t5) 	# previous of node 'c' is node 'a'
 		sw $t5, 8($t2)  # next of node 'a' is node 'c' 
 	                        # this way completing the deletion of node 'b'
-		j readNumber 
+		j endRemove  
 	
 		# exemple of linked list: (head)->a->b->c
 		# 'a' is being deleted 
@@ -389,11 +401,11 @@ remove:
 			sw $zero, 0($t5)      # $t5 = b->prev = 0 
 			sw $t5, 0($t3)    #hash[index] = next node of the one that is being deleted from the front 
 
-			j readNumber
+			j endRemove 
 			 	
 		unique: 
 			sw $zero, 0($t3) #sets zero to the hash[index] , meaning that there is no node in there 
-			j readNumber 
+			j endRemove 
 		
 		# exemple of linked list: (head)->a->b->c	
 		# 'c' is being deleted 
@@ -402,16 +414,20 @@ remove:
 			lw $t1, 0($s2) # $t1 = c->prev  
 			la $t1, 8($t1) # $t1 =  b->next  
 			sw $zero , 0($t1)     # b->next = 0
-			j readNumber 
+			j endRemove  
 	
 	printNotFound:
 		li $v0, 4
 		la $a0, inexistent #prints that the value does not exists on the hash
 		syscall 
 		
-		j readNumber #returns to menu 
 	
-
+	endRemove:
+		li $v0, 4
+		la $a0, delete 
+		syscall
+		
+		j readNumber #returns to menu
 
 	
 		      
