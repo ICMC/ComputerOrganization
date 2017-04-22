@@ -6,14 +6,17 @@
 
 .align 0  
  	menu:		.asciiz "1. Insert Key\n2. Remove Key\n3. Search Key\n4. Print Hash\n5. Exit \n"
-	option: 	.asciiz "What option: \n"
-	notValid: 	.asciiz "Option not valid! \n" 
-	inexistent: 	.asciiz "Value not found on the hash!\n"
-	existent:	.asciiz "This value has found on the hash!\n"
+	option: 	.asciiz "Choose an option: "
+	opNotValid: 	.asciiz "Option not valid!\n"
+	numNotValid:	.asciiz "Number not valid!\n"
+	inexistent: 	.asciiz "This value hasn't found on the hash.\n"
+	search1:	.asciiz "The element "
+	search2: 	.asciiz " is on hash index "
 	alreadyExists:	.asciiz "This value already is on the hash.\n"
-	number: 	.asciiz "What number: \n"
+	number: 	.asciiz "Type a number (-1 to exit): "
 	space:		.asciiz " "
 	enter:		.asciiz "\n"
+	periodEnter:	.asciiz ".\n"
 	separator:	.asciiz ": "
 .text
 # node:   prev (4bytes)
@@ -40,7 +43,7 @@
 # $s0 - Index, mod da funcao hash, multiplicado por 4 (enderecamento a byte)
 # $s1 - opcao do Menu 
 # $s2 - noh encontrado pela busca
-# $s3 - 
+# $s3 - posicao da hash do no da ultima busca (-1 se nao foi encontrado)
 # $s4 - number provided by the user 
 # $s5 -
 # $s6 -
@@ -64,15 +67,9 @@ main:
 		
 		beq $s1, 4, printHash
 		
-		beq $s1, 5, exit_loop
-		
-		li $v0, 4
-		la $a0, notValid
-		syscall
-		
-		j callMenu 
-  #
-	exit_loop:
+		beq $s1, 5, exitProgram
+			
+	exitProgram:
 		li $v0, 10
 		syscall
 
@@ -100,34 +97,58 @@ printMenu:
 	la $a0, menu		# load address of string to be printed into $a0
 	syscall 
 	
+readOption:
 	#asking what option
 	li $v0, 4
 	la $a0, option
 	syscall 
 	
-
 	li $v0, 5 #reading an interger 
 	syscall 
 	
-	move $s1, $v0
+	move $s1, $v0 #moving op to $s1
 	
-	beq $s1, 4, dontReadANumber # se a opcao for printar toda a hash, nao leia um numero
-	beq $s1, 5, dontReadANumber # se a opcao for sair, nao leia um numero
+	# testando para ver se a opcao eh valida
+	beq $s1, 1, readNumber # insercao precisa ler um numero
+	beq $s1, 2, readNumber # remocao precisa ler um numero
+	beq $s1, 3, readNumber # busca precisa ler um numero
+	beq $s1, 4, loop_option # print nao precisa ler numero
+	beq $s1, 5, loop_option # sair nao precisa ler numero
 	
-	li $v0, 4 #ask for value 
-	la $a0, number 
+	# caso o beq nao tenha ocorrido, opcao eh invalida
+	li $v0, 4
+	la $a0, opNotValid
 	syscall 
 	
-	li $v0, 5   #read number inpupt bz the user 
-	syscall 
+	j readOption
+		
+		
+readNumber:
+	li $v0, 4
+	la $a0, number
+	syscall
 	
-	move $s4, $v0 #moves value to $s4
+	li $v0, 5	# read a number typed by the user
+	syscall
 	
+	move $s4, $v0	# REGISTER $s4: numero digitado pelo usuario
+
+	beq $s4, -1, callMenu 	# troque de operacao, chame novamente o menu
+	blt $s4, $zero, invalidNumber # checa se o numero eh inteiro positivo
+	
+	# numero valido
 	jal hashFunc # calculating hash index for the input number
 	             # $s0 have the index
+	j loop_option	# chame a operacao pedida pelo usuario
 	
-dontReadANumber:
-		j loop_option		
+	invalidNumber:
+		li $v0, 4
+		la $a0, numNotValid
+		syscall
+		
+		j readNumber
+
+
 	
 # $s4 = numero
 # $s0 = retorna mod
@@ -152,9 +173,7 @@ hashFunc:
 						# eh possivel acessar esse campo na tabela hash
 		
 		jr $ra			  # retorne a execucao do programa principal
-					  # RETORNA em $v0 o resultado do mod
-		
-			
+					  # RETORNA em $s0 o resultado do mod
 	
 
 # $s4 = numero a ser buscado
@@ -167,7 +186,7 @@ search:
 	sw $ra, 0($sp)			# salva na STACK: 0($sp) = $ra = endereco de retorno da funcao
 
 	# ENCONTRAR LISTA ENCADEADA A BUSCAR O ELEMENTO
-	la $t0, hash			# lendo endereco do inicio da tabela hash					
+	la $t0, hash			# lendo endereco do inicio da tabela hash			
 	add $t0, $t0, $s0		# soma o numero de bytes a andar a partir do ponteiro
 					# do inicio da tabela hash
 					# REGISTER $t0: endereco da posicao index da hash (hash[index])
@@ -193,40 +212,57 @@ search:
 		j searchLoop			# volte ao inicio do loop, para testar um novo no
 					
 	searchNotFound:
-		li $s2, 0		# colocando 0 em $s2 para indicar que o elemento nao esta na tabela hash
+		li $s2, 0		# colocando 0 em $s2 para indicar que o elemento esta em um no invalido
 					# RETORNA $s2 = 0, para indicar que o numero nao foi achado
+					
+		li $s3, -1		# colocando -1 em $s3 para indicar que o elemento nao esta na hash
+					# RETORNA $s3 = -1, para indicar que o numero nao foi achado
 
-		beq $s1, 3, searchPrintNotFound # caso o comando seja de busca, tambem imprima que nao foi encontrado			
+		beq $s1, 3, searchPrint # caso o comando seja de busca, imprima o resultado			
 		
 		j searchReturn		# inicia retorno da funcao
-		
-	searchPrintNotFound:
-		li $v0, 4
-		la $a0, inexistent #prints that the value does not exists on the hash
-		syscall 
-		
-		j callMenu		# inicia retorno da funcao
-					
+						
 	searchFound:
 		move $s2, $t0		# colocando o endereco do no buscado em $s2
 					# RETORNA $s2 = $t0, para indicar o no onde esta o numero procurado
 					
-		beq $s1, 3, searchPrintFound # caso o comando seja de busca, tambem imprima que foi encontrado
+		move $s3, $s0		# $s3 recebe o index da tabela hash, multiplicado por 4
+		div $s3, $s3, 4		# RETORNA $s3 = $s0 / 4, para indicar o indice da hash onde esta o numero buscado
+					
+		beq $s1, 3, searchPrint # caso o comando seja de busca, imprima o resultado
 		
 		j searchReturn		# inicia retorno da funcao
 		
-	searchPrintFound:
+	searchPrint:
 		li $v0, 4
-		la $a0, existent #prints that the value exists on the hash
-		syscall 
+		la $a0, search1 # print "The element "...
+		syscall
 		
-		j callMenu		# inicia retorno da funcao
+		li $v0, 1
+		move $a0, $s4   # print the element searched by the user
+		syscall
+		
+		li $v0, 4
+		la $a0, search2 # print ..." is on hash index "...
+		syscall
+		
+		li $v0, 1
+		move $a0, $s3   # print the hash index, search result
+		syscall
+		
+		li $v0, 4
+		la $a0, periodEnter # print ...".\n"
+		syscall
+		
+		j searchReturn
 		
 	searchReturn:
 		lw $s4, 4($sp)		# recupere da STACK: $a0 = numero a ser buscado
 		lw $ra, 0($sp)		# recupere da STACK: $ra = endereco de retorno da funcao
 		addi $sp, $sp, 8	# retorna pilha ao tamanho original
-		jr $ra			# termina a funcao e retorna ao procedimento anterior
+		
+		beq $s1, 3, readNumber  # caso o comando seja de busca, retorne ao menu de leitura de numeros
+		jr $ra			# caso nao seja, continue o fluxo do codigo
 	
 #s1 = index 
 insert:
@@ -243,7 +279,7 @@ insert:
 	la $a0, alreadyExists #prints that the value exists on the hash
 	syscall 
 	
-	j callMenu 
+	j readNumber 
 
 	isntInHashYet: 
 
@@ -276,7 +312,7 @@ insert:
 		sw $t7, 0($t6)# ex primeiro no->previous = novo no
 		sw $t7, ($a1) #storing the address of the first node on hash[index]
 		
-		j callMenu
+		j readNumber
 		
 	loopFindPosition:
 	
@@ -294,14 +330,14 @@ insert:
 		sw $t6, 8($t7)#  new_node->next = aux
 		sw $t7, 0($t6) # aux->prev = new_node
 		
-		j callMenu
+		j readNumber
 
 	insertEnd:
 		sw $zero, 8($t7) #new_node->next = NULL
 		sw $t7, 8($t6) # aux->next = new_node
 		sw $t6, 0($t7) # new-node->prev = aux
 				
-		j callMenu
+		j readNumber
 		
 	insertFirstNode:
 		
@@ -309,7 +345,7 @@ insert:
 		sw $zero, 0($t7) #setting node->prev as NULL
 		sw $zero, 8($t7) #setting node->next as NULL
 		
-		j callMenu		
+		j readNumber		
 
 #s0 == index 
 #s2 - node returned by the search()
@@ -341,7 +377,7 @@ remove:
 		sw $t2, 0($t5) 	# previous of node 'c' is node 'a'
 		sw $t5, 8($t2)  # next of node 'a' is node 'c' 
 	                        # this way completing the deletion of node 'b'
-		j callMenu 
+		j readNumber 
 	
 		# exemple of linked list: (head)->a->b->c
 		# 'a' is being deleted 
@@ -353,11 +389,11 @@ remove:
 			sw $zero, 0($t5)      # $t5 = b->prev = 0 
 			sw $t5, 0($t3)    #hash[index] = next node of the one that is being deleted from the front 
 
-			j callMenu
+			j readNumber
 			 	
 		unique: 
 			sw $zero, 0($t3) #sets zero to the hash[index] , meaning that there is no node in there 
-			j callMenu 
+			j readNumber 
 		
 		# exemple of linked list: (head)->a->b->c	
 		# 'c' is being deleted 
@@ -366,14 +402,14 @@ remove:
 			lw $t1, 0($s2) # $t1 = c->prev  
 			la $t1, 8($t1) # $t1 =  b->next  
 			sw $zero , 0($t1)     # b->next = 0
-			j callMenu 
+			j readNumber 
 	
 	printNotFound:
 		li $v0, 4
 		la $a0, inexistent #prints that the value does not exists on the hash
 		syscall 
 		
-		j callMenu #returns to menu 
+		j readNumber #returns to menu 
 	
 
 
