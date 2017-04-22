@@ -362,7 +362,8 @@ remove:
 		# exemple of linked list: (head)->a->b->c	
 		# 'c' is being deleted 
 		lastNode:
-			la $t1, 0($s2) # $t1 = c->prev  
+			
+			lw $t1, 0($s2) # $t1 = c->prev  
 			la $t1, 8($t1) # $t1 =  b->next  
 			sw $zero , 0($t1)     # b->next = 0
 			j callMenu 
