@@ -1,5 +1,10 @@
 .data 
+	str1: 		.space 20
+	str2: 		.space 20
 .align 0 
+	
+	input1 :	.asciiz "type string 1: \n" 
+	input2:         .asciiz "\n type string 2: \n" 
 	string1: 	.asciiz "palavra"
 	string2:	.asciiz "palavra"
 	true: 		.asciiz "strings are equal"
@@ -10,9 +15,27 @@
 
 main:
 #String Compare 
-
-	la $t0, string1
-	la $t1, string2 
+	
+	li $v0, 4 # printing string 
+	la $a0, input1 
+	syscall
+	
+	li $v0, 8 #reading string
+	la $a0, str1 #buffer  
+	li $a1, 19 #saying the max size of the string 
+	syscall 
+	
+	li $v0, 4 # printing string 
+	la $a0, input2 
+	syscall
+	
+	li $v0, 8 #reading string
+	la $a0, str2 #buffer  
+	li $a1, 19 #saying the max size of the string 
+	syscall 
+	
+	la $t0, str1
+	la $t1, str2 
 	
 	
 	
