@@ -3,7 +3,7 @@
 	str2: 		.space 20
 .align 0 
 	
-	input1 :	.asciiz "type string 1: \n" 
+	input1 :	.asciiz "\ntype string 1: \n" 
 	input2:         .asciiz "\n type string 2: \n" 
 	string1: 	.asciiz "palavra"
 	string2:	.asciiz "palavra"
@@ -56,10 +56,10 @@ main:
 		la $a0, true 		# load address of string to be printed into $a0
 		syscall 
 		
-		j end
+		j main
        notEqual:
        		li $v0, 4 		# system call code for printing string 
 		la $a0, false		# load address of string to be printed into $a0
 		syscall 
 		
-       end:
+       j main
