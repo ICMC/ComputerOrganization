@@ -1,5 +1,5 @@
 .data 
-	array: .word 7,5,2,1,1,3,4 
+	array: .word 8,9,2,0,1,5,4 
 .align 0 
 	endln: .asciiz "\n"
 .text 
