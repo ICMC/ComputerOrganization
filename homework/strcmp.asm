@@ -1,13 +1,14 @@
 .data 
 .align 0 
 	string1: 	.asciiz "palavra"
-	string2:	.asciiz "word"
+	string2:	.asciiz "palavra"
 	true: 		.asciiz "strings are equal"
 	false: 		.asciiz "strings are NOT equal"
 	
 .text 
 .globl main 
 
+main:
 #String Compare 
 
 	la $t0, string1
@@ -16,8 +17,8 @@
 	
 	
         loop:
-        	lw $s0, 0($t0)
-        	lw $s1, 0($t1)
+        	lb $s0, 0($t0)
+        	lb $s1, 0($t1)
         	bne $s0, $s1, notEqual 
  
         	beq $s0, 0, Equal
@@ -28,5 +29,14 @@
         	j loop
         	
        Equal :
-       
+       		li $v0, 4 		# system call code for printing strings
+		la $a0, true 		# load address of string to be printed into $a0
+		syscall 
+		
+		j end
        notEqual:
+       		li $v0, 4 		# system call code for printing string 
+		la $a0, false		# load address of string to be printed into $a0
+		syscall 
+		
+       end:
