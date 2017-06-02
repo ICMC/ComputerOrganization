@@ -3,15 +3,11 @@
 .align 0 
 	endln: .asciiz "\n"
 .text 
-
 .globl main 
-
-
 main: 
 	jal print 
 	li $t0, 7
 	li $t2, 0 
-	
 	
 	outterLoop:
 	beq $t0,$t2, endOutLoop
@@ -37,22 +33,16 @@ main:
 				
 				addi $t4, $t4, 4 	
 			j innerLoop
-			
 			addArray:
 				addi $t4, $t4, 4 
-				j innerLoop	
-				
+				j innerLoop				
 	endOutLoop:
 	jal print 
         j endSort
-        
-
 print: 
-	
 	la $s1, array
 	li $t0, 0
 	li $t1, 7
-	
 	loopPrint:
 		beq $t0,$t1, endPrint
 		addi $t0, $t0, 1 
@@ -67,7 +57,6 @@ print:
 	li $v0, 4 
 	la $a0, endln 
 	syscall 
-	jr $ra 
-	
+	jr $ra 	
 endSort:
 	
