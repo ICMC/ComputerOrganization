@@ -1,0 +1,35 @@
+<!ELEMENT AmnesiaConfiguration (CPU, MainMemory, Cache*, VirtualMemory?)>
+
+<!--AMNESIA CONFIGURABLE MODULES -->
+<!ELEMENT CPU (wordSize)>
+<!ELEMENT MainMemory (blockSize, memorySize, ciclesPerAccess)>
+<!ELEMENT Cache (cacheType, ((instructionCache, dataCache) | (unifiedCache)))*>
+<!ELEMENT VirtualMemory (pageSize, diskMemorySize, diskMultiplicationFactor, diskCiclesPerAccess, pageTableReplacementAlgorithm, TLBType, ((instructionTLB, dataTLB)|unifiedTLB)?)>
+
+
+<!--CACHE CONFIGURABLE ELEMENTS -->
+<!ELEMENT instructionCache (lineSize, ciclesPerAccess, memorySize, associativityLevel, writePolicy, replacementAlgorithm)>
+<!ELEMENT dataCache (lineSize, ciclesPerAccess, memorySize, associativityLevel, writePolicy, replacementAlgorithm)>
+<!ELEMENT unifiedCache (lineSize, ciclesPerAccess, memorySize, associativityLevel, writePolicy, replacementAlgorithm)>
+
+<!ELEMENT instructionTLB ( ciclesPerAccess, memorySize, replacementAlgorithm)>
+<!ELEMENT dataTLB ( ciclesPerAccess, memorySize, replacementAlgorithm)>
+<!ELEMENT unifiedTLB ( ciclesPerAccess, memorySize, replacementAlgorithm)>
+
+
+
+<!--DATA TYPE -->
+<!ELEMENT cacheType (#PCDATA)>
+<!ELEMENT blockSize (#PCDATA)>        
+<!ELEMENT wordSize (#PCDATA)>
+<!ELEMENT lineSize (#PCDATA)>
+<!ELEMENT ciclesPerAccess (#PCDATA)>
+<!ELEMENT memorySize (#PCDATA)>
+<!ELEMENT associativityLevel (#PCDATA)>
+<!ELEMENT writePolicy (#PCDATA)>
+<!ELEMENT replacementAlgorithm (#PCDATA)>
+<!ELEMENT pageSize (#PCDATA)>
+<!ELEMENT diskMemorySize (#PCDATA)>
+<!ELEMENT registerOffset (#PCDATA)>
+<!ELEMENT TLBType (#PCDATA)>
+<!ELEMENT pageTableReplacementAlgorithm (#PCDATA)>
