@@ -1,14 +1,18 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <time.h>
 
 
 int main(){
-  int repeat, i;
-  srand(time(NULL));
+	int repeat, i;
+	int traceSize;
+	srand(time(NULL));
 
-  for(i=0; i<207; i++){
-    printf("2 %d\n", rand()%2048);
-  }
 
-  return 0;
+	scanf("%d", &traceSize);
+	for(i=0; i<traceSize; i++){
+		printf("2 %d\n", rand()%2048);
+	}
+
+	return 0;
 }

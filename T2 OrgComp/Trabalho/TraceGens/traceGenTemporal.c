@@ -1,15 +1,18 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <time.h>
 
 
 int main(){
   int repeat, i, aux;
+  int traceSize;
   srand(time(NULL));
 
   aux = rand()%2048;
   repeat = aux;
 
-  for(i=0; i<207; i++){
+  scanf("%d", &traceSize);
+  for(i=0; i<traceSize; i++){
     aux = rand()%2048;
     if(!(i%4)) printf("2 %d\n", repeat);
     else printf("2 %d\n", aux);
