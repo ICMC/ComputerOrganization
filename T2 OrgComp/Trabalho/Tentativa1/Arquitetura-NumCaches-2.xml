@@ -20,6 +20,19 @@
 		<ciclesPerAccessWrite>2</ciclesPerAccessWrite>
 		<timeCicle>10</timeCicle>
 	</MainMemory>
+  <Cache>
+		<cacheType>Unified</cacheType>
+		<unifiedCache>
+			<lineSize>1</lineSize>
+			<ciclesPerAccessRead>1</ciclesPerAccessRead>
+			<ciclesPerAccessWrite>2</ciclesPerAccessWrite>
+			<timeCicle>1</timeCicle>
+			<memorySize>128</memorySize>
+			<associativityLevel>1</associativityLevel>
+			<writePolicy>WriteThrough</writePolicy>
+			<replacementAlgorithm>LRU</replacementAlgorithm>
+		</unifiedCache>
+	</Cache>
 	<Cache>
 		<cacheType>Unified</cacheType>
 		<unifiedCache>
@@ -28,9 +41,9 @@
 			<ciclesPerAccessWrite>2</ciclesPerAccessWrite>
 			<timeCicle>1</timeCicle>
 			<memorySize>256</memorySize>
-			<associativityLevel>256</associativityLevel>
+			<associativityLevel>1</associativityLevel>
 			<writePolicy>WriteThrough</writePolicy>
-			<replacementAlgorithm>FIFO</replacementAlgorithm>
+			<replacementAlgorithm>LRU</replacementAlgorithm>
 		</unifiedCache>
 	</Cache>
 </AmnesiaConfiguration>

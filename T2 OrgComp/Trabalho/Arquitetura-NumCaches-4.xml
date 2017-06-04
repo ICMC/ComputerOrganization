@@ -27,6 +27,32 @@
 			<ciclesPerAccessRead>1</ciclesPerAccessRead>
 			<ciclesPerAccessWrite>2</ciclesPerAccessWrite>
 			<timeCicle>1</timeCicle>
+			<memorySize>32</memorySize>
+			<associativityLevel>32</associativityLevel>
+			<writePolicy>WriteThrough</writePolicy>
+			<replacementAlgorithm>LRU</replacementAlgorithm>
+		</unifiedCache>
+	</Cache>
+  <Cache>
+		<cacheType>Unified</cacheType>
+		<unifiedCache>
+			<lineSize>1</lineSize>
+			<ciclesPerAccessRead>1</ciclesPerAccessRead>
+			<ciclesPerAccessWrite>2</ciclesPerAccessWrite>
+			<timeCicle>1</timeCicle>
+			<memorySize>64</memorySize>
+			<associativityLevel>64</associativityLevel>
+			<writePolicy>WriteThrough</writePolicy>
+			<replacementAlgorithm>LRU</replacementAlgorithm>
+		</unifiedCache>
+	</Cache>
+  <Cache>
+		<cacheType>Unified</cacheType>
+		<unifiedCache>
+			<lineSize>1</lineSize>
+			<ciclesPerAccessRead>1</ciclesPerAccessRead>
+			<ciclesPerAccessWrite>2</ciclesPerAccessWrite>
+			<timeCicle>1</timeCicle>
 			<memorySize>128</memorySize>
 			<associativityLevel>128</associativityLevel>
 			<writePolicy>WriteThrough</writePolicy>

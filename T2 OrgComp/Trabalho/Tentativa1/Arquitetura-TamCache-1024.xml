@@ -27,10 +27,10 @@
 			<ciclesPerAccessRead>1</ciclesPerAccessRead>
 			<ciclesPerAccessWrite>2</ciclesPerAccessWrite>
 			<timeCicle>1</timeCicle>
-			<memorySize>256</memorySize>
-			<associativityLevel>256</associativityLevel>
+			<memorySize>1024</memorySize>
+			<associativityLevel>1</associativityLevel>
 			<writePolicy>WriteThrough</writePolicy>
-			<replacementAlgorithm>FIFO</replacementAlgorithm>
+			<replacementAlgorithm>LRU</replacementAlgorithm>
 		</unifiedCache>
 	</Cache>
 </AmnesiaConfiguration>

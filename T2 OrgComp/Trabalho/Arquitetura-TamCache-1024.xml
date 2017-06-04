@@ -28,7 +28,7 @@
 			<ciclesPerAccessWrite>2</ciclesPerAccessWrite>
 			<timeCicle>1</timeCicle>
 			<memorySize>1024</memorySize>
-			<associativityLevel>1</associativityLevel>
+			<associativityLevel>1024</associativityLevel>
 			<writePolicy>WriteThrough</writePolicy>
 			<replacementAlgorithm>LRU</replacementAlgorithm>
 		</unifiedCache>

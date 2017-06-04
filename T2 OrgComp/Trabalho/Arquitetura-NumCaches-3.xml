@@ -28,7 +28,7 @@
 			<ciclesPerAccessWrite>2</ciclesPerAccessWrite>
 			<timeCicle>1</timeCicle>
 			<memorySize>64</memorySize>
-			<associativityLevel>1</associativityLevel>
+			<associativityLevel>64</associativityLevel>
 			<writePolicy>WriteThrough</writePolicy>
 			<replacementAlgorithm>LRU</replacementAlgorithm>
 		</unifiedCache>
@@ -41,7 +41,7 @@
 			<ciclesPerAccessWrite>2</ciclesPerAccessWrite>
 			<timeCicle>1</timeCicle>
 			<memorySize>128</memorySize>
-			<associativityLevel>1</associativityLevel>
+			<associativityLevel>128</associativityLevel>
 			<writePolicy>WriteThrough</writePolicy>
 			<replacementAlgorithm>LRU</replacementAlgorithm>
 		</unifiedCache>
@@ -54,7 +54,7 @@
 			<ciclesPerAccessWrite>2</ciclesPerAccessWrite>
 			<timeCicle>1</timeCicle>
 			<memorySize>256</memorySize>
-			<associativityLevel>1</associativityLevel>
+			<associativityLevel>256</associativityLevel>
 			<writePolicy>WriteThrough</writePolicy>
 			<replacementAlgorithm>LRU</replacementAlgorithm>
 		</unifiedCache>
