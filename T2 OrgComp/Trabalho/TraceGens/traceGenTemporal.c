@@ -14,8 +14,8 @@ int main(){
   scanf("%d", &traceSize);
   for(i=0; i<traceSize; i++){
     aux = rand()%2048;
-    if(!(i%4)) printf("2 %d\n", repeat);
-    else printf("2 %d\n", aux);
+    if(!(i%4)) printf("2 %x\n", repeat);
+    else printf("2 %x\n", aux);
     if(!(i%20)) repeat = aux;
   }
 

@@ -11,7 +11,7 @@ int main(){
 	scanf("%d", &traceSize);
 	j = 0;
 	for(i=0; i<traceSize; i++){
-		printf("2 %d\n", j);
+		printf("2 %x\n", j);
 		j++;
 		if((rand()%100) <= 3) j = rand()%j+1;
 	}

@@ -11,7 +11,7 @@ int main(){
 
 	scanf("%d", &traceSize);
 	for(i=0; i<traceSize; i++){
-		printf("2 %d\n", rand()%2048);
+		printf("2 %x\n", rand()%2048);
 	}
 
 	return 0;
