@@ -8,4 +8,4 @@ run:
 	./traceGenESPACIAL < inputSize.txt > inputESPACIAL.in
 	./traceGenRANDOM < inputSize.txt > inputRANDOM.in
 	./traceGenTemporal < inputSize.txt > inputTEMPORAL.in
-	./traceGenTemporalEspacial < inputSize.txt > inputTemporalEspacial.in
+	./traceGenTemporalEspacial < inputSize.txt > inpuptTemporalEspacial.in
